@@ -5,6 +5,8 @@ namespace Api;
 
 internal static class UserEndpointsV1
 {
+    internal const string DeleteUserError = "Couldn't delete user.";
+
     public static RouteGroupBuilder MapUsersApiV1(this RouteGroupBuilder group)
     {
         group.MapPost("/", CreateUser)
@@ -30,18 +32,18 @@ internal static class UserEndpointsV1
         return group;
     }
 
-    static IResult GetUserById([FromServices] IUserService userService, int id)
+    internal static IResult GetUserById([FromServices] IUserService userService, int id)
     {
         var user = userService.FindUser(id);
 
         return user is null ? TypedResults.NotFound() : TypedResults.Ok(user);
     }
 
-    static IResult GetUsers([FromServices] IUserService userService) => TypedResults.Ok(userService.ListUsers());
+    internal static IResult GetUsers([FromServices] IUserService userService) => TypedResults.Ok(userService.ListUsers());
 
-    static IResult DeleteUser([FromServices] IUserService userService, int id) => userService.DeleteUser(id) ? TypedResults.Ok() : TypedResults.BadRequest("Couldn't delete user.");
+    internal static IResult DeleteUser([FromServices] IUserService userService, int id) => userService.DeleteUser(id) ? TypedResults.Ok() : TypedResults.BadRequest(UserEndpointsV1.DeleteUserError);
 
-    static IResult UpdateUser([FromServices] IUserService userService, int id, [FromBody]UpdateUserRequest request)
+    internal static IResult UpdateUser([FromServices] IUserService userService, int id, [FromBody]UpdateUserRequest request)
     {
         (var success, var error) = userService.UpdateUser(id, request.Email, request.Password);
 
@@ -53,7 +55,7 @@ internal static class UserEndpointsV1
         return TypedResults.Ok();
     }
 
-    static IResult CreateUser([FromServices] IUserService userService, [FromBody] CreateUserRequest request)
+    internal static IResult CreateUser([FromServices] IUserService userService, [FromBody] CreateUserRequest request)
     {
         (var success, var id, var errors) = userService.CreateUser(request.Email, request.Password);
 
