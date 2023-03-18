@@ -1,12 +1,8 @@
 ﻿using Api;
 using ApplicationServices;
-using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Routing;
-using NSubstitute;
-using NSubstitute.ReturnsExtensions;
-using NUnit.Framework.Internal;
 
 namespace Tests.Api;
 
