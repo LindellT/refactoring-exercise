@@ -11,9 +11,9 @@ public sealed record ValidPassword
 
     public const string ValidationRequirements = "Invalid password. Password length must be at least 8 characters.";
 
-    public static ValidPassword? CreateFrom(string password)
+    public static ValidPassword? CreateFrom(string? password)
     {
-        if (password.Length < 8)
+        if (password is null || password.Length < 8)
         {
             return null;
         }

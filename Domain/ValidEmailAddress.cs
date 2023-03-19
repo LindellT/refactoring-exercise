@@ -15,8 +15,13 @@ public sealed record ValidEmailAddress
 
     public const string ValidationRequirements = "Invalid email. Email must have a recipient and domain and contain @ sign.";
 
-    public static ValidEmailAddress? CreateFrom(string address)
+    public static ValidEmailAddress? CreateFrom(string? address)
     {
+        if (address is null)
+        {
+            return null;
+        }
+
         var addressParts = address.Split('@');
         if (addressParts.Length < 2 || addressParts[0].Trim().Length == 0 || addressParts[1].Trim().Length == 0)
         { 

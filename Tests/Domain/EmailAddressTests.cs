@@ -10,7 +10,8 @@ internal class EmailAddressTests
     [TestCase("bill@")]
     [TestCase("bill@ ")]
     [TestCase(" @microsoft.com")]
-    public void GivenSmartConstructerIsCalled_WhenParametersAreNotValid_ThenReturnsNull(string email)
+    [TestCase(null)]
+    public void GivenSmartConstructerIsCalled_WhenParametersAreNotValid_ThenReturnsNull(string? email)
     {
         // Arrange
 

@@ -49,8 +49,8 @@ internal static class UserEndpointsV1
     {   
         (var success, var error) = await userService.UpdateUserAsync(
             id,
-            request.Email is null ? null : ValidEmailAddress.CreateFrom(request.Email),
-            request.Password is null ? null : ValidPassword.CreateFrom(request.Password),
+            ValidEmailAddress.CreateFrom(request.Email),
+            ValidPassword.CreateFrom(request.Password),
             cancellationToken);
 
         if (!success)

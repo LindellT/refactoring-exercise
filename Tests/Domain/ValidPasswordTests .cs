@@ -4,11 +4,12 @@ namespace Tests.Domain;
 
 internal class ValidPasswordTests
 {
-    [Test]    
-    public void GivenSmartConstructerIsCalled_WhenParametersAreNotValid_ThenReturnsNull()
+    [Test]
+    [TestCase("1234567")]
+    [TestCase(null)]
+    public void GivenSmartConstructerIsCalled_WhenParametersAreNotValid_ThenReturnsNull(string? password)
     {
         // Arrange
-        var password = "1234567";
 
         // Act
         var result = ValidPassword.CreateFrom(password);
