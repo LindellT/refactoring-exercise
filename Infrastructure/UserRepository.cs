@@ -1,5 +1,6 @@
 ﻿using ApplicationServices;
 using Domain;
+using System.Text.Json;
 
 namespace Infrastructure;
 
@@ -12,12 +13,12 @@ internal class UserRepository : IUserRepository
         _userContext = userContext;
     }
 
-    public User? CreateUser(string email, string password)
+    public User? CreateUser(ValidEmailAddress email, HashedPassword passwordHash)
     {
         var user = new UserEntity
         {
             Email = email,
-            Password = password
+            HashedPassword = passwordHash,
         };
             
         _userContext.Add(user);
@@ -41,7 +42,7 @@ internal class UserRepository : IUserRepository
 
     public User? FindUser(int id) => FindUserEntity(id);
 
-    public User? FindUserByEmail(string? email) => _userContext.Users.FirstOrDefault(u => u.Email == email && !u.IsDeleted);
+    public User? FindUserByEmail(ValidEmailAddress email) => _userContext.Users.FirstOrDefault(u => u.Email.Address == email.Address && !u.IsDeleted);
 
     public List<User> ListUsers() => _userContext.Users.Where(u => !u.IsDeleted).Select(u => (User)u!).ToList();
 
@@ -55,7 +56,7 @@ internal class UserRepository : IUserRepository
         }
 
         userEntity.Email = user.Email;
-        userEntity.Password = user.Password;
+        userEntity.HashedPassword = user.HashedPassword;
 
         return _userContext.SaveChanges() == 1;        
     }

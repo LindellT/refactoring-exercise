@@ -4,13 +4,13 @@ namespace ApplicationServices;
 
 public interface IUserRepository
 {
-    User? CreateUser(string email, string password);
+    User? CreateUser(ValidEmailAddress email, HashedPassword hashedPassword);
     
     bool DeleteUser(int id);
     
     User? FindUser(int id);
 
-    User? FindUserByEmail(string? email);
+    User? FindUserByEmail(ValidEmailAddress email);
     
     List<User> ListUsers();
     

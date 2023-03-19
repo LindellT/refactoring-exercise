@@ -171,10 +171,10 @@ internal class UserEndpointsV1Tests
     public void GivenCreateUserIsCalled_WhenCreationFails_ThenReturnCorrectly()
     {
         // Arrange
-        var createUserRequest = new CreateUserRequest(string.Empty, string.Empty);
-        var validationErrorMessages = new Dictionary<string, string[]>() { {"Houston", new string[] { "we have a problem." } }};
+        var createUserRequest = new CreateUserRequest("bill@microsoft.com", "password123");
+        var validationErrorMessage = "Houston, we have a problem.";
         var userService = Substitute.For<IUserService>();
-        userService.CreateUser(default, default).ReturnsForAnyArgs((false, default, validationErrorMessages));
+        userService.CreateUser(default!, default!).ReturnsForAnyArgs((false, default, validationErrorMessage));
         
         var sut = () => UserEndpointsV1.CreateUser(userService, createUserRequest);
 
@@ -186,7 +186,7 @@ internal class UserEndpointsV1Tests
             new
             {
                 StatusCode = 400,
-                ProblemDetails = new HttpValidationProblemDetails(validationErrorMessages)
+                ProblemDetails = new HttpValidationProblemDetails(new Dictionary<string, string[]> { { string.Empty, new string[] { validationErrorMessage } } })
                 {
                     Status = 400,
                     Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1",
@@ -198,10 +198,10 @@ internal class UserEndpointsV1Tests
     public void GivenCreateUserIsCalled_WhenCreationSucceeds_ThenReturnCorrectly()
     {
         // Arrange        
-        var createUserRequest = new CreateUserRequest(string.Empty, string.Empty);
+        var createUserRequest = new CreateUserRequest("bill@microsoft.com", "password123");
         var id = 10;
         var userService = Substitute.For<IUserService>();
-        userService.CreateUser(default, default).ReturnsForAnyArgs((true, id, null));
+        userService.CreateUser(default!, default!).ReturnsForAnyArgs((true, id, null));
         
         var sut = () => UserEndpointsV1.CreateUser(userService, createUserRequest);
 

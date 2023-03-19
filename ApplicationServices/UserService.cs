@@ -1,44 +1,32 @@
-﻿namespace ApplicationServices;
+﻿using Domain;
+
+namespace ApplicationServices;
 
 internal class UserService : IUserService
 {
     private readonly IUserRepository _userRepository;
+    private readonly ValidPasswordSalt _validPasswordSalt;
 
-    public UserService(IUserRepository userRepository) => _userRepository = userRepository;
-
-    public (bool success, int? id, Dictionary<string, string[]>? errors) CreateUser(string? email, string? password)
+    public UserService(IUserRepository userRepository)
     {
-        var validPassword = !string.IsNullOrEmpty(password) && password.Length > 7;
+        _userRepository = userRepository;
+        _validPasswordSalt = ValidPasswordSalt.CreateFrom("12345678901234567890123465789012")!;
+    }
 
-        var validationProblems = new List<(string field, string description)>();
-
-        if (!validPassword)
-        {
-            validationProblems.Add(("password", "Invalid password. Password must be minimum of 8 characters."));
-        }
-
-        var validEmail = !string.IsNullOrEmpty(email) && email.Length > 2 && email.Contains('@');
-
-        if (!validEmail)
-        {
-            validationProblems.Add(("email", "Invalid email. Email must have a recipient and domain and contain @ sign."));
-        }
-
-        if (validationProblems.Any())
-        {
-            return (false, null, validationProblems.ToDictionary(p => p.field, p => validationProblems.Where(vp => vp.field == p.field).Select(vp => vp.description).ToArray()));
-        }
-
+    public (bool success, int? id, string? error) CreateUser(ValidEmailAddress email, ValidPassword password)
+    {
         if (_userRepository.FindUserByEmail(email) is not null)
         {
-            return (false, null, new Dictionary<string, string[]>() { { "email", new string[] { "Email reserved." } } });
+            return (false, null, "Email reserved.");
         }
 
-        var user = _userRepository.CreateUser(email!, password!);
+        var hashedPassword = HashedPassword.CreateFrom(password, _validPasswordSalt);
+
+        var user = _userRepository.CreateUser(email, hashedPassword);
 
         if (user is null)
         {
-            return (false, null, new Dictionary<string, string[]>() { { string.Empty, new string[] { "User creation failed" } } });
+            return (false, null, "User creation failed");
         }
 
         return (true, user.Id, null);
@@ -50,12 +38,9 @@ internal class UserService : IUserService
 
     public List<UserDTO> ListUsers() => _userRepository.ListUsers().Select(u => UserDTO.FromUser(u)!).ToList();
 
-    public (bool success, string? error) UpdateUser(int id, string? email, string? password)
+    public (bool success, string? error) UpdateUser(int id, ValidEmailAddress? email, ValidPassword? password)
     {
-        var validPassword = !string.IsNullOrEmpty(password) && password.Length > 7;
-        var validEmail = !string.IsNullOrEmpty(email) && email.Length > 2 && email.Contains('@');
-
-        if (!validPassword && !validEmail)
+        if (email is null && password is null)
         {
             return (false, "Invalid email and password");
         }
@@ -67,22 +52,21 @@ internal class UserService : IUserService
             return (false, "User doesn't exist");
         }
 
-        var userByEmail = _userRepository.FindUserByEmail(email);
-
-        if (userByEmail != null && userByEmail.Id != id)
+        if (email is not null)
         {
-            return (false, "Email reserved.");
+            var userByEmail = _userRepository.FindUserByEmail(email);
+
+            if (userByEmail is not null && userByEmail.Id != id)
+            {
+                return (false, "Email reserved.");
+            }
+
+            user = user with { Email = email };
         }
 
-
-        if (validEmail)
+        if (password is not null)
         {
-            user = user with { Email = email! };
-        }
-
-        if (validPassword)
-        {
-            user = user with { Password = password! };
+            user = user with { HashedPassword = HashedPassword.CreateFrom(password, _validPasswordSalt) };
         }
 
         var success = _userRepository.UpdateUser(user);

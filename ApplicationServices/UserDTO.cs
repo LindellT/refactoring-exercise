@@ -11,7 +11,7 @@ public record UserDTO(int Id, string Email)
             return null;
         }
 
-        return new(u.Id, u.Email);
+        return new(u.Id, u.Email.Address);
     }
 
     public static UserDTO? FromUser(User? u) => (UserDTO?)u;

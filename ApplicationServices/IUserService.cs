@@ -1,4 +1,6 @@
-﻿namespace ApplicationServices;
+﻿using Domain;
+
+namespace ApplicationServices;
 
 public interface IUserService
 {
@@ -8,7 +10,7 @@ public interface IUserService
 
     bool DeleteUser(int id);
 
-    (bool success, string? error) UpdateUser(int id, string? email, string? password);
+    (bool success, string? error) UpdateUser(int id, ValidEmailAddress? email, ValidPassword? password);
 
-    (bool success, int? id, Dictionary<string, string[]>? errors) CreateUser(string? email, string? password);
+    (bool success, int? id, string? error) CreateUser(ValidEmailAddress email, ValidPassword password);
 }
