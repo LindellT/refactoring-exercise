@@ -2,7 +2,7 @@
 
 namespace ApplicationServices;
 
-public record UserDTO(int Id, string Email)
+public sealed record UserDTO(int Id, string Email)
 {
     public static explicit operator UserDTO?(User? u)
     {

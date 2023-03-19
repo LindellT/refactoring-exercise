@@ -2,7 +2,7 @@
 
 namespace Infrastructure;
 
-internal class UserEntity
+internal sealed class UserEntity
 { 
     public int Id { get; set; }
 

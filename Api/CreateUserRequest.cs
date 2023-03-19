@@ -1,3 +1,3 @@
 ﻿namespace Api;
 
-internal record CreateUserRequest(string Email, string Password);
+internal sealed record CreateUserRequest(string Email, string Password);

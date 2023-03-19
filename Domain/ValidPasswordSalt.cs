@@ -1,6 +1,6 @@
 ﻿namespace Domain;
 
-public record ValidPasswordSalt
+public sealed record ValidPasswordSalt
 {
     private ValidPasswordSalt(string salt)
     {

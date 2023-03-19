@@ -1,3 +1,3 @@
 ﻿namespace Api;
 
-internal record UpdateUserRequest(string? Email, string? Password);
+internal sealed record UpdateUserRequest(string? Email, string? Password);

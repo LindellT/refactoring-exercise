@@ -2,7 +2,7 @@
 
 namespace ApplicationServices;
 
-internal class UserService : IUserService
+internal sealed class UserService : IUserService
 {
     private readonly IUserRepository _userRepository;
     private readonly ValidPasswordSalt _validPasswordSalt;

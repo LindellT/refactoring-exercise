@@ -1,10 +1,9 @@
 ﻿using ApplicationServices;
 using Domain;
-using System.Text.Json;
 
 namespace Infrastructure;
 
-internal class UserRepository : IUserRepository
+internal sealed class UserRepository : IUserRepository
 {
     private readonly UserContext _userContext;
 

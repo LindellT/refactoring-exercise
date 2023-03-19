@@ -1,10 +1,9 @@
 ﻿using Domain;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Cryptography.X509Certificates;
 
 namespace Infrastructure;
 
-internal class UserContext : DbContext
+internal sealed class UserContext : DbContext
 {
     public UserContext(DbContextOptions options) : base(options)
     {

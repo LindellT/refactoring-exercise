@@ -1,3 +1,3 @@
 ﻿namespace Domain;
 
-public record User(int Id, ValidEmailAddress Email, HashedPassword HashedPassword);
+public sealed record User(int Id, ValidEmailAddress Email, HashedPassword HashedPassword);
