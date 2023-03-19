@@ -19,6 +19,6 @@ internal class UserEntity
             return null;
         }
 
-        return u is not null ? new(u.Id, u.Email, u.HashedPassword) : null;
+        return new(u.Id, u.Email, u.HashedPassword);
     }
 }
