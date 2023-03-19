@@ -1,5 +1,6 @@
 ﻿using ApplicationServices;
 using Domain;
+using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure;
 
@@ -12,7 +13,7 @@ internal sealed class UserRepository : IUserRepository
         _userContext = userContext;
     }
 
-    public User? CreateUser(ValidEmailAddress email, HashedPassword passwordHash)
+    public async Task<User?> CreateUserAsync(ValidEmailAddress email, HashedPassword passwordHash, CancellationToken cancellationToken)
     {
         var user = new UserEntity
         {
@@ -20,14 +21,14 @@ internal sealed class UserRepository : IUserRepository
             HashedPassword = passwordHash,
         };
             
-        _userContext.Add(user);
+        await _userContext.AddAsync(user, cancellationToken);
 
-        return _userContext.SaveChanges() != 0 ? user : null;
+        return await _userContext.SaveChangesAsync(cancellationToken) != 0 ? user : null;
 }
 
-    public bool DeleteUser(int id)
+    public async Task<bool> DeleteUserAsync(int id, CancellationToken cancellationToken)
     {
-        var user = _userContext.Users.Find(id);
+        var user = await _userContext.Users.FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
 
         if (user is null)
         {
@@ -36,18 +37,19 @@ internal sealed class UserRepository : IUserRepository
 
         user.IsDeleted = true;
 
-        return _userContext.SaveChanges() == 1;
+        return await _userContext.SaveChangesAsync(cancellationToken) == 1;
     }
 
-    public User? FindUser(int id) => _userContext.Users.Find(id);
+    public async Task<User?> FindUserAsync(int id, CancellationToken cancellationToken) => await _userContext.Users.FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
 
-    public User? FindUserByEmail(ValidEmailAddress email) => _userContext.Users.FirstOrDefault(u => u.Email.Address == email.Address);
+    public async Task<User?> FindUserByEmailAsync(ValidEmailAddress email, CancellationToken cancellationToken)
+        => await _userContext.Users.FirstOrDefaultAsync(u => u.Email.Address == email.Address, cancellationToken);
 
-    public List<User> ListUsers() => _userContext.Users.Select(u => (User)u!).ToList();
+    public async Task<List<User>> ListUsersAsync(CancellationToken cancellationToken) => await _userContext.Users.Select(u => (User)u!).ToListAsync(cancellationToken);
 
-    public bool UpdateUser(User user)
+    public async Task<bool> UpdateUserAsync(User user, CancellationToken cancellationToken)
     {
-        var userEntity = _userContext.Users.Find(user.Id);
+        var userEntity = await _userContext.Users.FirstOrDefaultAsync(u => u.Id == user.Id, cancellationToken);
 
         if (userEntity is null)
         {
@@ -57,6 +59,6 @@ internal sealed class UserRepository : IUserRepository
         userEntity.Email = user.Email;
         userEntity.HashedPassword = user.HashedPassword;
 
-        return _userContext.SaveChanges() == 1;        
+        return await _userContext.SaveChangesAsync(cancellationToken) == 1;        
     }
 }

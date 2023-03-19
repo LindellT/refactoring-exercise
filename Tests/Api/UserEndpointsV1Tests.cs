@@ -9,33 +9,33 @@ namespace Tests.Api;
 internal class UserEndpointsV1Tests
 {
     [Test]
-    public void GivenGetUserIsCalled_WhenUserDoesNotExists_ThenReturnCorrectly()
+    public async Task GivenGetUserIsCalled_WhenUserDoesNotExists_ThenReturnCorrectly()
     {
         // Arrange
         var userService = Substitute.For<IUserService>();
-        userService.FindUser(default).ReturnsNull();
+        userService.FindUserAsync(default, default).ReturnsNull();
         
-        var sut = () => UserEndpointsV1.GetUserById(userService, default);
+        var sut = () => UserEndpointsV1.GetUserByIdAsync(userService, default);
 
         // Act
-        var result = sut.Invoke();
+        var result = await sut.Invoke();
 
         // Assert
         result.Should().BeOfType<NotFound>().Which.StatusCode.Should().Be(404);
     }
 
     [Test]
-    public void GivenGetUserIsCalled_WhenUserExists_ThenReturnCorrectly()
+    public async Task GivenGetUserIsCalled_WhenUserExists_ThenReturnCorrectly()
     {
         // Arrange        
         var user = new UserDTO(1, "a@b");
         var userService = Substitute.For<IUserService>();
-        userService.FindUser(default).ReturnsForAnyArgs(user);
+        userService.FindUserAsync(default, default).ReturnsForAnyArgs(user);
 
-        var sut = () => UserEndpointsV1.GetUserById(userService, default);
+        var sut = () => UserEndpointsV1.GetUserByIdAsync(userService, default);
 
         // Act
-        var result = sut.Invoke();
+        var result = await sut.Invoke();
 
         // Assert
         result.Should().BeOfType<Ok<UserDTO>>().Which.Should().BeEquivalentTo(
@@ -47,17 +47,17 @@ internal class UserEndpointsV1Tests
     }
 
     [Test]
-    public void GivenGetUsersIsCalled_WhenThereAreUsers_ThenReturnsCorrectly()
+    public async Task GivenGetUsersIsCalled_WhenThereAreUsers_ThenReturnsCorrectly()
     {
         // Arrange
         var users = new List<UserDTO> { new(1, "a@b"), new(2, "b@c"), };
         var userService = Substitute.For<IUserService>();
-        userService.ListUsers().Returns(users);
+        userService.ListUsersAsync(default).Returns(users);
 
-        var sut = () => UserEndpointsV1.GetUsers(userService);
+        var sut = () => UserEndpointsV1.GetUsersAsync(userService, default);
 
         // Act
-        var result = sut.Invoke();
+        var result = await sut.Invoke();
 
         // Assert
         result.Should().BeOfType<Ok<List<UserDTO>>>().Which.Should().BeEquivalentTo(
@@ -69,17 +69,17 @@ internal class UserEndpointsV1Tests
     }
 
     [Test]
-    public void GivenGetUsersIsCalled_WhenTherAreNoUsers_ThenReturnsCorrectly()
+    public async Task GivenGetUsersIsCalled_WhenTherAreNoUsers_ThenReturnsCorrectly()
     {
         // Arrange        
         var users = new List<UserDTO>();
         var userService = Substitute.For<IUserService>();
-        userService.ListUsers().Returns(users);
+        userService.ListUsersAsync(default).Returns(users);
         
-        var sut = () => UserEndpointsV1.GetUsers(userService);
+        var sut = () => UserEndpointsV1.GetUsersAsync(userService, default);
 
         // Act
-        var result = sut.Invoke();
+        var result = await sut.Invoke();
 
         // Assert
         result.Should().BeOfType<Ok<List<UserDTO>>>().Which.Should().BeEquivalentTo(
@@ -91,16 +91,16 @@ internal class UserEndpointsV1Tests
     }
 
     [Test]
-    public void GivenDeleteUserIsCalled_WhenDeleteFails_ThenReturnCorrectly()
+    public async Task GivenDeleteUserIsCalled_WhenDeleteFails_ThenReturnCorrectly()
     {
         // Arrange
         var userService = Substitute.For<IUserService>();
-        userService.DeleteUser(default).Returns(false);
+        userService.DeleteUserAsync(default, default).Returns(false);
         
-        var sut = () => UserEndpointsV1.DeleteUser(userService, default);
+        var sut = () => UserEndpointsV1.DeleteUserAsync(userService, default, default);
         
         // Act
-        var result = sut.Invoke();
+        var result = await sut.Invoke();
 
         // Assert
         result.Should().BeOfType<BadRequest<string>>().Which.Should().BeEquivalentTo(
@@ -112,34 +112,34 @@ internal class UserEndpointsV1Tests
     }
 
     [Test]
-    public void GivenDeleteUserIsCalled_WhenDeleteSucceeds_ThenReturnCorrectly()
+    public async Task GivenDeleteUserIsCalled_WhenDeleteSucceeds_ThenReturnCorrectly()
     {
         // Arrange
         var userService = Substitute.For<IUserService>();
-        userService.DeleteUser(default).Returns(true);
+        userService.DeleteUserAsync(default, default).Returns(true);
         
-        var sut = () => UserEndpointsV1.DeleteUser(userService, default);
+        var sut = () => UserEndpointsV1.DeleteUserAsync(userService, default, default);
 
         // Act
-        var result = sut.Invoke();
+        var result = await sut.Invoke();
 
         // Assert
         result.Should().BeOfType<Ok>().Which.StatusCode.Should().Be(200);
     }
 
     [Test]
-    public void GivenUpdateUserIsCalled_WhenUpdateFails_ThenReturnCorrectly()
+    public async Task GivenUpdateUserIsCalled_WhenUpdateFails_ThenReturnCorrectly()
     {
         // Arrange        
         var updateUserRequest = new UpdateUserRequest(default, default);
         var errorMessage = "Houston we have a problem.";
         var userService = Substitute.For<IUserService>();
-        userService.UpdateUser(default, default, default).ReturnsForAnyArgs((false, errorMessage));
+        userService.UpdateUserAsync(default, default, default, default).ReturnsForAnyArgs((false, errorMessage));
         
-        var sut = () => UserEndpointsV1.UpdateUser(userService, default, updateUserRequest);
+        var sut = () => UserEndpointsV1.UpdateUserAsync(userService, default, updateUserRequest, default);
 
         // Act
-        var result = sut.Invoke();
+        var result = await sut.Invoke();
 
         // Assert
         result.Should().BeOfType<BadRequest<string>>().Which.Should().BeEquivalentTo(
@@ -151,35 +151,35 @@ internal class UserEndpointsV1Tests
     }
 
     [Test]
-    public void GivenUpdateUserIsCalled_WhenUpdateSucceeds_ThenReturnCorrectly()
+    public async Task GivenUpdateUserIsCalled_WhenUpdateSucceeds_ThenReturnCorrectly()
     {
         // Arrange        
         var updateUserRequest = new UpdateUserRequest(default, default);
         var userService = Substitute.For<IUserService>();
-        userService.UpdateUser(default, default, default).ReturnsForAnyArgs((true, default));
+        userService.UpdateUserAsync(default, default, default, default).ReturnsForAnyArgs((true, default));
         
-        var sut = () => UserEndpointsV1.UpdateUser(userService, default, updateUserRequest);
+        var sut = () => UserEndpointsV1.UpdateUserAsync(userService, default, updateUserRequest, default);
 
         // Act
-        var result = sut.Invoke();
+        var result = await sut.Invoke();
 
         // Assert
         result.Should().BeOfType<Ok>().Which.StatusCode.Should().Be(200);
     }
 
     [Test]
-    public void GivenCreateUserIsCalled_WhenCreationFails_ThenReturnCorrectly()
+    public async Task GivenCreateUserIsCalled_WhenCreationFails_ThenReturnCorrectly()
     {
         // Arrange
         var createUserRequest = new CreateUserRequest("bill@microsoft.com", "password123");
         var validationErrorMessage = "Houston, we have a problem.";
         var userService = Substitute.For<IUserService>();
-        userService.CreateUser(default!, default!).ReturnsForAnyArgs((false, default, validationErrorMessage));
+        userService.CreateUserAsync(default!, default!, default).ReturnsForAnyArgs((false, default, validationErrorMessage));
         
-        var sut = () => UserEndpointsV1.CreateUser(userService, createUserRequest);
+        var sut = () => UserEndpointsV1.CreateUserAsync(userService, createUserRequest, default);
 
         // Act
-        var result = sut.Invoke();
+        var result = await sut.Invoke();
 
         // Assert
         result.Should().BeOfType<ValidationProblem>().Which.Should().BeEquivalentTo(
@@ -195,25 +195,25 @@ internal class UserEndpointsV1Tests
     }
 
     [Test]
-    public void GivenCreateUserIsCalled_WhenCreationSucceeds_ThenReturnCorrectly()
+    public async Task GivenCreateUserIsCalled_WhenCreationSucceeds_ThenReturnCorrectly()
     {
         // Arrange        
         var createUserRequest = new CreateUserRequest("bill@microsoft.com", "password123");
         var id = 10;
         var userService = Substitute.For<IUserService>();
-        userService.CreateUser(default!, default!).ReturnsForAnyArgs((true, id, null));
+        userService.CreateUserAsync(default!, default!, default).ReturnsForAnyArgs((true, id, null));
         
-        var sut = () => UserEndpointsV1.CreateUser(userService, createUserRequest);
+        var sut = () => UserEndpointsV1.CreateUserAsync(userService, createUserRequest, default);
 
         // Act
-        var result = sut.Invoke();
+        var result = await sut.Invoke();
 
         // Assert
         result.Should().BeOfType<CreatedAtRoute>().Which.Should().BeEquivalentTo(
             new
             {
                 StatusCode = 201,
-                RouteName = nameof(UserEndpointsV1.GetUserById),
+                RouteName = nameof(UserEndpointsV1.GetUserByIdAsync),
                 RouteValues = new RouteValueDictionary { { nameof(id), id }, },
             });
     }

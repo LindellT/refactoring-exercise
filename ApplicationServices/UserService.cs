@@ -13,16 +13,16 @@ internal sealed class UserService : IUserService
         _validPasswordSalt = ValidPasswordSalt.CreateFrom("12345678901234567890123465789012")!;
     }
 
-    public (bool success, int? id, string? error) CreateUser(ValidEmailAddress email, ValidPassword password)
+    public async Task<(bool success, int? id, string? error)> CreateUserAsync(ValidEmailAddress email, ValidPassword password, CancellationToken cancellationToken)
     {
-        if (_userRepository.FindUserByEmail(email) is not null)
+        if (await _userRepository.FindUserByEmailAsync(email, cancellationToken) is not null)
         {
             return (false, null, "Email reserved.");
         }
 
         var hashedPassword = HashedPassword.CreateFrom(password, _validPasswordSalt);
 
-        var user = _userRepository.CreateUser(email, hashedPassword);
+        var user = await _userRepository.CreateUserAsync(email, hashedPassword, cancellationToken);
 
         if (user is null)
         {
@@ -32,20 +32,20 @@ internal sealed class UserService : IUserService
         return (true, user.Id, null);
     }
 
-    public bool DeleteUser(int id) => _userRepository.DeleteUser(id);
+    public async Task<bool> DeleteUserAsync(int id, CancellationToken cancellationToken) => await _userRepository.DeleteUserAsync(id, cancellationToken);
 
-    public UserDTO? FindUser(int id) => UserDTO.FromUser(_userRepository.FindUser(id));
+    public async Task<UserDTO?> FindUserAsync(int id, CancellationToken cancellationToken) => UserDTO.FromUser(await _userRepository.FindUserAsync(id, cancellationToken));
 
-    public List<UserDTO> ListUsers() => _userRepository.ListUsers().Select(u => UserDTO.FromUser(u)!).ToList();
+    public async Task<List<UserDTO>> ListUsersAsync(CancellationToken cancellationToken) => (await _userRepository.ListUsersAsync(cancellationToken)).Select(u => UserDTO.FromUser(u)!).ToList();
 
-    public (bool success, string? error) UpdateUser(int id, ValidEmailAddress? email, ValidPassword? password)
+    public async Task<(bool success, string? error)> UpdateUserAsync(int id, ValidEmailAddress? email, ValidPassword? password, CancellationToken cancellationToken)
     {
         if (email is null && password is null)
         {
             return (false, "Invalid email and password");
         }
 
-        var user = _userRepository.FindUser(id);
+        var user = await _userRepository.FindUserAsync(id, cancellationToken);
 
         if (user is null)
         {
@@ -54,7 +54,7 @@ internal sealed class UserService : IUserService
 
         if (email is not null)
         {
-            var userByEmail = _userRepository.FindUserByEmail(email);
+            var userByEmail = await _userRepository.FindUserByEmailAsync(email, cancellationToken);
 
             if (userByEmail is not null && userByEmail.Id != id)
             {
@@ -69,7 +69,7 @@ internal sealed class UserService : IUserService
             user = user with { HashedPassword = HashedPassword.CreateFrom(password, _validPasswordSalt) };
         }
 
-        var success = _userRepository.UpdateUser(user);
+        var success = await _userRepository.UpdateUserAsync(user, cancellationToken);
 
         return (success, success ? null : "Updating user failed or no changes");
     }

@@ -4,13 +4,13 @@ namespace ApplicationServices;
 
 public interface IUserService
 {
-    List<UserDTO> ListUsers();
+    Task<(bool success, int? id, string? error)> CreateUserAsync(ValidEmailAddress email, ValidPassword password, CancellationToken cancellationToken);
 
-    UserDTO? FindUser(int id);
+    Task<bool> DeleteUserAsync(int id, CancellationToken cancellationToken);
 
-    bool DeleteUser(int id);
+    Task<UserDTO?> FindUserAsync(int id, CancellationToken cancellationToken);
 
-    (bool success, string? error) UpdateUser(int id, ValidEmailAddress? email, ValidPassword? password);
+    Task<List<UserDTO>> ListUsersAsync(CancellationToken cancellationToken);
 
-    (bool success, int? id, string? error) CreateUser(ValidEmailAddress email, ValidPassword password);
+    Task<(bool success, string? error)> UpdateUserAsync(int id, ValidEmailAddress? email, ValidPassword? password, CancellationToken cancellationToken);
 }

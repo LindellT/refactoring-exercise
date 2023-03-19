@@ -4,15 +4,15 @@ namespace ApplicationServices;
 
 public interface IUserRepository
 {
-    User? CreateUser(ValidEmailAddress email, HashedPassword hashedPassword);
+    Task<User?> CreateUserAsync(ValidEmailAddress email, HashedPassword hashedPassword, CancellationToken cancellationToken);
     
-    bool DeleteUser(int id);
+    Task<bool> DeleteUserAsync(int id, CancellationToken cancellationToken);
     
-    User? FindUser(int id);
+    Task<User?> FindUserAsync(int id, CancellationToken cancellationToken);
 
-    User? FindUserByEmail(ValidEmailAddress email);
+    Task<User?> FindUserByEmailAsync(ValidEmailAddress email, CancellationToken cancellationToken);
     
-    List<User> ListUsers();
+    Task<List<User>> ListUsersAsync(CancellationToken cancellationToken);
     
-    bool UpdateUser(User user);
+    Task<bool> UpdateUserAsync(User user, CancellationToken cancellationToken);
 }

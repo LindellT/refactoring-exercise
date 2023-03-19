@@ -10,46 +10,48 @@ internal static class UserEndpointsV1
 
     public static RouteGroupBuilder MapUsersApiV1(this RouteGroupBuilder group)
     {
-        group.MapPost("/", CreateUser)
-            .WithName(nameof(CreateUser))
+        group.MapPost("/", CreateUserAsync)
+            .WithName(nameof(CreateUserAsync))
             .WithOpenApi();
 
-        group.MapPut("/{id:int}", UpdateUser)
-            .WithName(nameof(UpdateUser))
+        group.MapPut("/{id:int}", UpdateUserAsync)
+            .WithName(nameof(UpdateUserAsync))
             .WithOpenApi();
 
-        group.MapDelete("/{id:int}", DeleteUser)
-            .WithName(nameof(DeleteUser))
+        group.MapDelete("/{id:int}", DeleteUserAsync)
+            .WithName(nameof(DeleteUserAsync))
             .WithOpenApi();
 
-        group.MapGet("/", GetUsers)
-            .WithName(nameof(GetUsers))
+        group.MapGet("/", GetUsersAsync)
+            .WithName(nameof(GetUsersAsync))
             .WithOpenApi();
 
-        group.MapGet("/{id:int}", GetUserById)
-            .WithName(nameof(GetUserById))
+        group.MapGet("/{id:int}", GetUserByIdAsync)
+            .WithName(nameof(GetUserByIdAsync))
             .WithOpenApi();
 
         return group;
     }
 
-    internal static IResult GetUserById([FromServices] IUserService userService, int id)
+    internal static async Task<IResult> GetUserByIdAsync([FromServices] IUserService userService, int id, CancellationToken cancellationToken = default)
     {
-        var user = userService.FindUser(id);
+        var user = await userService.FindUserAsync(id, cancellationToken);
 
         return user is null ? TypedResults.NotFound() : TypedResults.Ok(user);
     }
 
-    internal static IResult GetUsers([FromServices] IUserService userService) => TypedResults.Ok(userService.ListUsers());
+    internal static async Task<IResult> GetUsersAsync([FromServices] IUserService userService, CancellationToken cancellationToken) => TypedResults.Ok(await userService.ListUsersAsync(cancellationToken));
 
-    internal static IResult DeleteUser([FromServices] IUserService userService, int id) => userService.DeleteUser(id) ? TypedResults.Ok() : TypedResults.BadRequest(UserEndpointsV1.DeleteUserError);
+    internal static async Task<IResult> DeleteUserAsync([FromServices] IUserService userService, int id, CancellationToken cancellationToken)
+        => await userService.DeleteUserAsync(id, cancellationToken) ? TypedResults.Ok() : TypedResults.BadRequest(UserEndpointsV1.DeleteUserError);
 
-    internal static IResult UpdateUser([FromServices] IUserService userService, int id, [FromBody]UpdateUserRequest request)
+    internal static async Task<IResult> UpdateUserAsync([FromServices] IUserService userService, int id, [FromBody]UpdateUserRequest request, CancellationToken cancellationToken)
     {   
-        (var success, var error) = userService.UpdateUser(
+        (var success, var error) = await userService.UpdateUserAsync(
             id,
             request.Email is null ? null : ValidEmailAddress.CreateFrom(request.Email),
-            request.Password is null ? null : ValidPassword.CreateFrom(request.Password));
+            request.Password is null ? null : ValidPassword.CreateFrom(request.Password),
+            cancellationToken);
 
         if (!success)
         {
@@ -59,7 +61,7 @@ internal static class UserEndpointsV1
         return TypedResults.Ok();
     }
 
-    internal static IResult CreateUser([FromServices] IUserService userService, [FromBody] CreateUserRequest request)
+    internal static async Task<IResult> CreateUserAsync([FromServices] IUserService userService, [FromBody] CreateUserRequest request, CancellationToken cancellationToken)
     {
 
         var validationProblems = new List<(string field, string description)>();
@@ -78,7 +80,7 @@ internal static class UserEndpointsV1
 
         if (email is not null && password is not null)
         {
-            (var success, var id, var error) = userService.CreateUser(email, password);
+            (var success, var id, var error) = await userService.CreateUserAsync(email, password, cancellationToken);
 
             if (!success && error is not null)
             {
@@ -87,7 +89,7 @@ internal static class UserEndpointsV1
             }
             else
             {
-                return TypedResults.CreatedAtRoute(nameof(GetUserById), new { id });
+                return TypedResults.CreatedAtRoute(nameof(GetUserByIdAsync), new { id });
             }
         }
 
