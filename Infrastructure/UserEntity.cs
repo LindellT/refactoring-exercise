@@ -6,11 +6,19 @@ internal class UserEntity
 { 
     public int Id { get; set; }
 
-    public string Email { get; set; } = string.Empty;
+    public ValidEmailAddress Email { get; set; } = null!;
 
-    public string Password { get; set; } = string.Empty;
+    public HashedPassword HashedPassword { get; set; } = null!;
 
     public bool IsDeleted { get; set; }
 
-    public static implicit operator User?(UserEntity? u) => u is not null ? new(u.Id, u.Email, u.Password) : null;
+    public static implicit operator User?(UserEntity? u)
+    {
+        if (u is null)
+        {
+            return null;
+        }
+
+        return u is not null ? new(u.Id, u.Email, u.HashedPassword) : null;
+    }
 }

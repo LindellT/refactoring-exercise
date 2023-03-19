@@ -12,12 +12,12 @@ internal class UserRepository : IUserRepository
         _userContext = userContext;
     }
 
-    public User? CreateUser(string email, string password)
+    public User? CreateUser(ValidEmailAddress email, HashedPassword passwordHash)
     {
         var user = new UserEntity
         {
             Email = email,
-            Password = password
+            HashedPassword = passwordHash,
         };
             
         _userContext.Add(user);
@@ -39,15 +39,15 @@ internal class UserRepository : IUserRepository
         return _userContext.SaveChanges() == 1;
     }
 
-    public User? FindUser(int id) => FindUserEntity(id);
+    public User? FindUser(int id) => _userContext.Users.Find(id);
 
-    public User? FindUserByEmail(string? email) => _userContext.Users.FirstOrDefault(u => u.Email == email && !u.IsDeleted);
+    public User? FindUserByEmail(ValidEmailAddress email) => _userContext.Users.FirstOrDefault(u => u.Email.Address == email.Address);
 
-    public List<User> ListUsers() => _userContext.Users.Where(u => !u.IsDeleted).Select(u => (User)u!).ToList();
+    public List<User> ListUsers() => _userContext.Users.Select(u => (User)u!).ToList();
 
     public bool UpdateUser(User user)
     {
-        var userEntity = FindUserEntity(user.Id);
+        var userEntity = _userContext.Users.Find(user.Id);
 
         if (userEntity is null)
         {
@@ -55,10 +55,8 @@ internal class UserRepository : IUserRepository
         }
 
         userEntity.Email = user.Email;
-        userEntity.Password = user.Password;
+        userEntity.HashedPassword = user.HashedPassword;
 
         return _userContext.SaveChanges() == 1;        
     }
-
-    private UserEntity? FindUserEntity(int id) => _userContext.Users.FirstOrDefault(u => u.Id == id && !u.IsDeleted);
 }
