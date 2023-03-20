@@ -13,16 +13,16 @@ internal sealed class UserService : IUserService
         _validPasswordSalt = ValidPasswordSalt.CreateFrom("12345678901234567890123465789012")!;
     }
 
-    public async Task<(bool success, int? id, string? error)> CreateUserAsync(ValidEmailAddress email, ValidPassword password, CancellationToken cancellationToken)
+    public async Task<(bool success, int? id, string? error)> CreateUserAsync(CreateUserCommand command, CancellationToken cancellationToken)
     {
-        if (await _userRepository.FindUserByEmailAsync(email, cancellationToken) is not null)
+        if (await _userRepository.FindUserByEmailAsync(command.EmailAddress, cancellationToken) is not null)
         {
             return (false, null, "Email reserved.");
         }
 
-        var hashedPassword = HashedPassword.CreateFrom(password, _validPasswordSalt);
+        var hashedPassword = HashedPassword.CreateFrom(command.Password, _validPasswordSalt);
 
-        var user = await _userRepository.CreateUserAsync(email, hashedPassword, cancellationToken);
+        var user = await _userRepository.CreateUserAsync(command.EmailAddress, hashedPassword, cancellationToken);
 
         if (user is null)
         {
@@ -38,35 +38,30 @@ internal sealed class UserService : IUserService
 
     public async Task<List<UserDTO>> ListUsersAsync(CancellationToken cancellationToken) => (await _userRepository.ListUsersAsync(cancellationToken)).Select(u => UserDTO.FromUser(u)!).ToList();
 
-    public async Task<(bool success, string? error)> UpdateUserAsync(int id, ValidEmailAddress? email, ValidPassword? password, CancellationToken cancellationToken)
+    public async Task<(bool success, string? error)> UpdateUserAsync(UpdateUserCommand command, CancellationToken cancellationToken)
     {
-        if (email is null && password is null)
-        {
-            return (false, "Invalid email and password");
-        }
-
-        var user = await _userRepository.FindUserAsync(id, cancellationToken);
+        var user = await _userRepository.FindUserAsync(command.Id, cancellationToken);
 
         if (user is null)
         {
             return (false, "User doesn't exist");
         }
 
-        if (email is not null)
+        if (command.EmailAddress is not null)
         {
-            var userByEmail = await _userRepository.FindUserByEmailAsync(email, cancellationToken);
+            var userByEmail = await _userRepository.FindUserByEmailAsync(command.EmailAddress, cancellationToken);
 
-            if (userByEmail is not null && userByEmail.Id != id)
+            if (userByEmail is not null && userByEmail.Id != command.Id)
             {
                 return (false, "Email reserved.");
             }
 
-            user = user with { Email = email };
+            user = user with { Email = command.EmailAddress, };
         }
 
-        if (password is not null)
+        if (command.Password is not null)
         {
-            user = user with { HashedPassword = HashedPassword.CreateFrom(password, _validPasswordSalt) };
+            user = user with { HashedPassword = HashedPassword.CreateFrom(command.Password, _validPasswordSalt), };
         }
 
         var success = await _userRepository.UpdateUserAsync(user, cancellationToken);

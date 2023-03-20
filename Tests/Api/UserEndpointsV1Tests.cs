@@ -131,10 +131,10 @@ internal class UserEndpointsV1Tests
     public async Task GivenUpdateUserIsCalled_WhenUpdateFails_ThenReturnCorrectly()
     {
         // Arrange        
-        var updateUserRequest = new UpdateUserRequest(default, default);
+        var updateUserRequest = new UpdateUserRequest("bill@microsoft.com", default);
         var errorMessage = "Houston we have a problem.";
         var userService = Substitute.For<IUserService>();
-        userService.UpdateUserAsync(default, default, default, default).ReturnsForAnyArgs((false, errorMessage));
+        userService.UpdateUserAsync(default!, default).ReturnsForAnyArgs((false, errorMessage));
         
         var sut = () => UserEndpointsV1.UpdateUserAsync(userService, default, updateUserRequest, default);
 
@@ -151,12 +151,38 @@ internal class UserEndpointsV1Tests
     }
 
     [Test]
-    public async Task GivenUpdateUserIsCalled_WhenUpdateSucceeds_ThenReturnCorrectly()
+    public async Task GivenUpdateUserIsCalled_WhenParametersAreInvalid_ThenReturnCorrectly()
     {
         // Arrange        
-        var updateUserRequest = new UpdateUserRequest(default, default);
+        var updateUserRequest = new UpdateUserRequest(null, null);
+        var errorMessage = "Houston we have a problem.";
         var userService = Substitute.For<IUserService>();
-        userService.UpdateUserAsync(default, default, default, default).ReturnsForAnyArgs((true, default));
+        userService.UpdateUserAsync(default!, default).ReturnsForAnyArgs((false, errorMessage));
+
+        var sut = () => UserEndpointsV1.UpdateUserAsync(userService, default, updateUserRequest, default);
+
+        // Act
+        var result = await sut.Invoke();
+
+        // Assert
+        result.Should().BeOfType<BadRequest<string>>().Which.Should().BeEquivalentTo(
+            new
+            {
+                StatusCode = 400,
+                Value = UpdateUserCommand.ValidationRequirements,
+            });
+    }
+
+    [Test]
+    [TestCase("bill@microsoft.com", "password123")]
+    [TestCase("bill@microsoft.com", null)]
+    [TestCase(null, "password123")]
+    public async Task GivenUpdateUserIsCalled_WhenParametersAreValid_ThenReturnCorrectly(string? email, string? password)
+    {
+        // Arrange        
+        var updateUserRequest = new UpdateUserRequest(email, password);
+        var userService = Substitute.For<IUserService>();
+        userService.UpdateUserAsync(default!, default).ReturnsForAnyArgs((true, default));
         
         var sut = () => UserEndpointsV1.UpdateUserAsync(userService, default, updateUserRequest, default);
 
@@ -174,7 +200,7 @@ internal class UserEndpointsV1Tests
         var createUserRequest = new CreateUserRequest("bill@microsoft.com", "password123");
         var validationErrorMessage = "Houston, we have a problem.";
         var userService = Substitute.For<IUserService>();
-        userService.CreateUserAsync(default!, default!, default).ReturnsForAnyArgs((false, default, validationErrorMessage));
+        userService.CreateUserAsync(default!, default).ReturnsForAnyArgs((false, default, validationErrorMessage));
         
         var sut = () => UserEndpointsV1.CreateUserAsync(userService, createUserRequest, default);
 
@@ -201,7 +227,7 @@ internal class UserEndpointsV1Tests
         var createUserRequest = new CreateUserRequest("bill@microsoft.com", "password123");
         var id = 10;
         var userService = Substitute.For<IUserService>();
-        userService.CreateUserAsync(default!, default!, default).ReturnsForAnyArgs((true, id, null));
+        userService.CreateUserAsync(default!, default).ReturnsForAnyArgs((true, id, null));
         
         var sut = () => UserEndpointsV1.CreateUserAsync(userService, createUserRequest, default);
 

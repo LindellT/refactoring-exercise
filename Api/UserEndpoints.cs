@@ -47,11 +47,14 @@ internal static class UserEndpointsV1
 
     internal static async Task<IResult> UpdateUserAsync([FromServices] IUserService userService, int id, [FromBody]UpdateUserRequest request, CancellationToken cancellationToken)
     {   
-        (var success, var error) = await userService.UpdateUserAsync(
-            id,
-            ValidEmailAddress.CreateFrom(request.Email),
-            ValidPassword.CreateFrom(request.Password),
-            cancellationToken);
+        var updateUserCommand = UpdateUserCommand.CreateFrom(id, ValidEmailAddress.CreateFrom(request.Email), ValidPassword.CreateFrom(request.Password));
+
+        if (updateUserCommand is null)
+        {
+            return TypedResults.BadRequest(UpdateUserCommand.ValidationRequirements);
+        }
+
+        (var success, var error) = await userService.UpdateUserAsync(updateUserCommand, cancellationToken);
 
         if (!success)
         {
@@ -63,7 +66,6 @@ internal static class UserEndpointsV1
 
     internal static async Task<IResult> CreateUserAsync([FromServices] IUserService userService, [FromBody] CreateUserRequest request, CancellationToken cancellationToken)
     {
-
         var validationProblems = new List<(string field, string description)>();
 
         var email = ValidEmailAddress.CreateFrom(request.Email);
@@ -80,7 +82,7 @@ internal static class UserEndpointsV1
 
         if (email is not null && password is not null)
         {
-            (var success, var id, var error) = await userService.CreateUserAsync(email, password, cancellationToken);
+            (var success, var id, var error) = await userService.CreateUserAsync(new(email, password), cancellationToken);
 
             if (!success && error is not null)
             {
