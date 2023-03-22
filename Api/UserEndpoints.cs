@@ -6,8 +6,6 @@ namespace Api;
 
 internal static class UserEndpointsV1
 {
-    internal const string DeleteUserError = "Couldn't delete user.";
-
     public static RouteGroupBuilder MapUsersApiV1(this RouteGroupBuilder group)
     {
         group.MapPost("/", CreateUserAsync)
@@ -43,7 +41,11 @@ internal static class UserEndpointsV1
     internal static async Task<IResult> GetUsersAsync([FromServices] IUserService userService, CancellationToken cancellationToken) => TypedResults.Ok(await userService.ListUsersAsync(cancellationToken));
 
     internal static async Task<IResult> DeleteUserAsync([FromServices] IUserService userService, int id, CancellationToken cancellationToken)
-        => await userService.DeleteUserAsync(id, cancellationToken) ? TypedResults.Ok() : TypedResults.BadRequest(UserEndpointsV1.DeleteUserError);
+        => (await userService.DeleteUserAsync(id, cancellationToken))
+            .Match<IResult>(
+                _ => TypedResults.Ok(),
+                _ => TypedResults.NotFound(),
+                error => TypedResults.BadRequest(error.Message));
 
     internal static async Task<IResult> UpdateUserAsync([FromServices] IUserService userService, int id, [FromBody]UpdateUserRequest request, CancellationToken cancellationToken)
     {   
@@ -80,22 +82,16 @@ internal static class UserEndpointsV1
             validationProblems.Add((nameof(request.Password), ValidPassword.ValidationRequirements));
         }
 
-        if (email is not null && password is not null)
+        if (validationProblems.Any())
         {
-            (var success, var id, var error) = await userService.CreateUserAsync(new(email, password), cancellationToken);
-
-            if (!success && error is not null)
-            {
-                validationProblems.Add((string.Empty, error));
-                
-            }
-            else
-            {
-                return TypedResults.CreatedAtRoute(nameof(GetUserByIdAsync), new { id });
-            }
+            var errors = validationProblems.ToDictionary(p => p.field, p => validationProblems.Where(vp => vp.field == p.field).Select(vp => vp.description).ToArray());
+            return TypedResults.ValidationProblem(errors);
         }
-
-        var errors = validationProblems.ToDictionary(p => p.field, p => validationProblems.Where(vp => vp.field == p.field).Select(vp => vp.description).ToArray());
-        return TypedResults.ValidationProblem(errors);
+        
+        return (await userService.CreateUserAsync(new(email!, password!), cancellationToken))
+            .Match<IResult>(
+                success => TypedResults.CreatedAtRoute(nameof(GetUserByIdAsync), new { id = success.Value }),
+                emailReserved => TypedResults.BadRequest(emailReserved.Message),
+                userCreationFailed => TypedResults.BadRequest(userCreationFailed.Message));
     }
 }

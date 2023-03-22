@@ -1,4 +1,6 @@
 ﻿using Domain;
+using OneOf;
+using OneOf.Types;
 
 namespace ApplicationServices;
 
@@ -13,26 +15,20 @@ internal sealed class UserService : IUserService
         _validPasswordSalt = ValidPasswordSalt.CreateFrom("12345678901234567890123465789012")!;
     }
 
-    public async Task<(bool success, int? id, string? error)> CreateUserAsync(CreateUserCommand command, CancellationToken cancellationToken)
+    public async Task<OneOf<Success<int>, EmailReservedError, UserCreationFailedError>> CreateUserAsync(CreateUserCommand command, CancellationToken cancellationToken)
     {
         if (await _userRepository.FindUserByEmailAsync(command.EmailAddress, cancellationToken) is not null)
         {
-            return (false, null, "Email reserved.");
+            return new EmailReservedError();
         }
 
         var hashedPassword = HashedPassword.CreateFrom(command.Password, _validPasswordSalt);
 
-        var user = await _userRepository.CreateUserAsync(command.EmailAddress, hashedPassword, cancellationToken);
-
-        if (user is null)
-        {
-            return (false, null, "User creation failed");
-        }
-
-        return (true, user.Id, null);
+        return (await _userRepository.CreateUserAsync(command.EmailAddress, hashedPassword, cancellationToken))
+            .TryPickT0(out var success, out var error) ? success : error;
     }
 
-    public async Task<bool> DeleteUserAsync(int id, CancellationToken cancellationToken) => await _userRepository.DeleteUserAsync(id, cancellationToken);
+    public async Task<OneOf<Success, NotFound, UserDeletionFailedError>> DeleteUserAsync(int id, CancellationToken cancellationToken) => await _userRepository.DeleteUserAsync(id, cancellationToken);
 
     public async Task<UserDTO?> FindUserAsync(int id, CancellationToken cancellationToken) => UserDTO.FromUser(await _userRepository.FindUserAsync(id, cancellationToken));
 

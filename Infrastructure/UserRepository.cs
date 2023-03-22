@@ -1,6 +1,8 @@
 ﻿using ApplicationServices;
 using Domain;
 using Microsoft.EntityFrameworkCore;
+using OneOf;
+using OneOf.Types;
 
 namespace Infrastructure;
 
@@ -13,7 +15,7 @@ internal sealed class UserRepository : IUserRepository
         _userContext = userContext;
     }
 
-    public async Task<User?> CreateUserAsync(ValidEmailAddress email, HashedPassword passwordHash, CancellationToken cancellationToken)
+    public async Task<OneOf<Success<int>, UserCreationFailedError>> CreateUserAsync(ValidEmailAddress email, HashedPassword passwordHash, CancellationToken cancellationToken)
     {
         var user = new UserEntity
         {
@@ -23,21 +25,23 @@ internal sealed class UserRepository : IUserRepository
             
         await _userContext.AddAsync(user, cancellationToken);
 
-        return await _userContext.SaveChangesAsync(cancellationToken) != 0 ? user : null;
-}
+        return await _userContext.SaveChangesAsync(cancellationToken) != 0
+            ? new Success<int>(user.Id)
+            : new UserCreationFailedError();
+    }
 
-    public async Task<bool> DeleteUserAsync(int id, CancellationToken cancellationToken)
+    public async Task<OneOf<Success, NotFound, UserDeletionFailedError>> DeleteUserAsync(int id, CancellationToken cancellationToken)
     {
         var user = await _userContext.Users.FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
 
         if (user is null)
         {
-            return false;
+            return new NotFound();
         }
 
         user.IsDeleted = true;
 
-        return await _userContext.SaveChangesAsync(cancellationToken) == 1;
+        return await _userContext.SaveChangesAsync(cancellationToken) == 1 ? new Success() : new UserDeletionFailedError();
     }
 
     public async Task<User?> FindUserAsync(int id, CancellationToken cancellationToken) => await _userContext.Users.FirstOrDefaultAsync(u => u.Id == id, cancellationToken);

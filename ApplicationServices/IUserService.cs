@@ -1,12 +1,14 @@
 ﻿using Domain;
+using OneOf.Types;
+using OneOf;
 
 namespace ApplicationServices;
 
 public interface IUserService
 {
-    Task<(bool success, int? id, string? error)> CreateUserAsync(CreateUserCommand command, CancellationToken cancellationToken);
+    Task<OneOf<Success<int>, EmailReservedError, UserCreationFailedError>> CreateUserAsync(CreateUserCommand command, CancellationToken cancellationToken);
 
-    Task<bool> DeleteUserAsync(int id, CancellationToken cancellationToken);
+    Task<OneOf<Success, NotFound, UserDeletionFailedError>> DeleteUserAsync(int id, CancellationToken cancellationToken);
 
     Task<UserDTO?> FindUserAsync(int id, CancellationToken cancellationToken);
 

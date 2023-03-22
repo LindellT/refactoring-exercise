@@ -1,8 +1,11 @@
 ﻿using Api;
 using ApplicationServices;
+using Domain;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Routing;
+using OneOf;
+using OneOf.Types;
 
 namespace Tests.Api;
 
@@ -14,14 +17,14 @@ internal class UserEndpointsV1Tests
         // Arrange
         var userService = Substitute.For<IUserService>();
         userService.FindUserAsync(default, default).ReturnsNull();
-        
+
         var sut = () => UserEndpointsV1.GetUserByIdAsync(userService, default);
 
         // Act
         var result = await sut.Invoke();
 
         // Assert
-        result.Should().BeOfType<NotFound>().Which.StatusCode.Should().Be(404);
+        result.Should().BeOfType<Microsoft.AspNetCore.Http.HttpResults.NotFound>().Which.StatusCode.Should().Be(404);
     }
 
     [Test]
@@ -75,7 +78,7 @@ internal class UserEndpointsV1Tests
         var users = new List<UserDTO>();
         var userService = Substitute.For<IUserService>();
         userService.ListUsersAsync(default).Returns(users);
-        
+
         var sut = () => UserEndpointsV1.GetUsersAsync(userService, default);
 
         // Act
@@ -95,10 +98,11 @@ internal class UserEndpointsV1Tests
     {
         // Arrange
         var userService = Substitute.For<IUserService>();
-        userService.DeleteUserAsync(default, default).Returns(false);
-        
+        userService.DeleteUserAsync(default, default).Returns(
+            Task.FromResult<OneOf<Success, OneOf.Types.NotFound, UserDeletionFailedError>>(new UserDeletionFailedError()));
+
         var sut = () => UserEndpointsV1.DeleteUserAsync(userService, default, default);
-        
+
         // Act
         var result = await sut.Invoke();
 
@@ -107,8 +111,25 @@ internal class UserEndpointsV1Tests
             new
             {
                 StatusCode = 400,
-                Value = UserEndpointsV1.DeleteUserError,
+                Value = new UserDeletionFailedError().Message,
             });
+    }
+
+    [Test]
+    public async Task GivenDeleteUserIsCalled_WhenUserIsNotFound_ThenReturnCorrectly()
+    {
+        // Arrange
+        var userService = Substitute.For<IUserService>();
+        userService.DeleteUserAsync(default, default).Returns(
+            Task.FromResult<OneOf<Success, OneOf.Types.NotFound, UserDeletionFailedError>>(new OneOf.Types.NotFound()));
+
+        var sut = () => UserEndpointsV1.DeleteUserAsync(userService, default, default);
+
+        // Act
+        var result = await sut.Invoke();
+
+        // Assert
+        result.Should().BeOfType<Microsoft.AspNetCore.Http.HttpResults.NotFound>().Which.StatusCode.Should().Be(404);
     }
 
     [Test]
@@ -116,8 +137,9 @@ internal class UserEndpointsV1Tests
     {
         // Arrange
         var userService = Substitute.For<IUserService>();
-        userService.DeleteUserAsync(default, default).Returns(true);
-        
+        userService.DeleteUserAsync(default, default).Returns(
+            Task.FromResult<OneOf<Success, OneOf.Types.NotFound, UserDeletionFailedError>>(new Success()));
+
         var sut = () => UserEndpointsV1.DeleteUserAsync(userService, default, default);
 
         // Act
@@ -135,7 +157,7 @@ internal class UserEndpointsV1Tests
         var errorMessage = "Houston we have a problem.";
         var userService = Substitute.For<IUserService>();
         userService.UpdateUserAsync(default!, default).ReturnsForAnyArgs((false, errorMessage));
-        
+
         var sut = () => UserEndpointsV1.UpdateUserAsync(userService, default, updateUserRequest, default);
 
         // Act
@@ -183,7 +205,7 @@ internal class UserEndpointsV1Tests
         var updateUserRequest = new UpdateUserRequest(email, password);
         var userService = Substitute.For<IUserService>();
         userService.UpdateUserAsync(default!, default).ReturnsForAnyArgs((true, default));
-        
+
         var sut = () => UserEndpointsV1.UpdateUserAsync(userService, default, updateUserRequest, default);
 
         // Act
@@ -198,25 +220,42 @@ internal class UserEndpointsV1Tests
     {
         // Arrange
         var createUserRequest = new CreateUserRequest("bill@microsoft.com", "password123");
-        var validationErrorMessage = "Houston, we have a problem.";
         var userService = Substitute.For<IUserService>();
-        userService.CreateUserAsync(default!, default).ReturnsForAnyArgs((false, default, validationErrorMessage));
-        
+        userService.CreateUserAsync(default!, default).ReturnsForAnyArgs(new UserCreationFailedError());
+
         var sut = () => UserEndpointsV1.CreateUserAsync(userService, createUserRequest, default);
 
         // Act
         var result = await sut.Invoke();
 
         // Assert
-        result.Should().BeOfType<ValidationProblem>().Which.Should().BeEquivalentTo(
+        result.Should().BeOfType<BadRequest<string>>().Which.Should().BeEquivalentTo(
             new
             {
                 StatusCode = 400,
-                ProblemDetails = new HttpValidationProblemDetails(new Dictionary<string, string[]> { { string.Empty, new string[] { validationErrorMessage } } })
-                {
-                    Status = 400,
-                    Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1",
-                },
+                Value = new UserCreationFailedError().Message,
+            });
+    }
+
+    [Test]
+    public async Task GivenCreateUserIsCalled_WhenEmailIsReserved_ThenReturnCorrectly()
+    {
+        // Arrange
+        var createUserRequest = new CreateUserRequest("bill@microsoft.com", "password123");
+        var userService = Substitute.For<IUserService>();
+        userService.CreateUserAsync(default!, default).ReturnsForAnyArgs(new EmailReservedError());
+
+        var sut = () => UserEndpointsV1.CreateUserAsync(userService, createUserRequest, default);
+
+        // Act
+        var result = await sut.Invoke();
+
+        // Assert
+        result.Should().BeOfType<BadRequest<string>>().Which.Should().BeEquivalentTo(
+            new
+            {
+                StatusCode = 400,
+                Value = new EmailReservedError().Message,
             });
     }
 
@@ -227,8 +266,8 @@ internal class UserEndpointsV1Tests
         var createUserRequest = new CreateUserRequest("bill@microsoft.com", "password123");
         var id = 10;
         var userService = Substitute.For<IUserService>();
-        userService.CreateUserAsync(default!, default).ReturnsForAnyArgs((true, id, null));
-        
+        userService.CreateUserAsync(default!, default).ReturnsForAnyArgs(new Success<int>(id));
+
         var sut = () => UserEndpointsV1.CreateUserAsync(userService, createUserRequest, default);
 
         // Act
@@ -241,6 +280,94 @@ internal class UserEndpointsV1Tests
                 StatusCode = 201,
                 RouteName = nameof(UserEndpointsV1.GetUserByIdAsync),
                 RouteValues = new RouteValueDictionary { { nameof(id), id }, },
+            });
+    }
+
+    [Test]
+    public async Task GivenCreateUserIsCalled_WhenEmailAndPasswordAreInvalid_ThenReturnCorrectly()
+    {
+        // Arrange        
+        var createUserRequest = new CreateUserRequest(null!, null!);
+        var userService = Substitute.For<IUserService>();
+
+        var sut = () => UserEndpointsV1.CreateUserAsync(userService, createUserRequest, default);
+
+        // Act
+        var result = await sut.Invoke();
+
+        // Assert
+        result.Should().BeOfType<ValidationProblem>().Which.Should().BeEquivalentTo(
+            new
+            {
+                StatusCode = 400,
+                ProblemDetails = new HttpValidationProblemDetails(
+                    new Dictionary<string, string[]>
+                    {
+                        { nameof(createUserRequest.Email), new string[] { ValidEmailAddress.ValidationRequirements } },
+                        { nameof(createUserRequest.Password), new string[] { ValidPassword.ValidationRequirements } },
+                    })
+                {
+                    Status = 400,
+                    Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1",
+                },
+            });
+    }
+
+    [Test]
+    public async Task GivenCreateUserIsCalled_WhenPasswordIsInvalid_ThenReturnCorrectly()
+    {
+        // Arrange        
+        var createUserRequest = new CreateUserRequest("bill@microsoft.com", null!);
+        var userService = Substitute.For<IUserService>();
+
+        var sut = () => UserEndpointsV1.CreateUserAsync(userService, createUserRequest, default);
+
+        // Act
+        var result = await sut.Invoke();
+
+        // Assert
+        result.Should().BeOfType<ValidationProblem>().Which.Should().BeEquivalentTo(
+            new
+            {
+                StatusCode = 400,
+                ProblemDetails = new HttpValidationProblemDetails(
+                    new Dictionary<string, string[]>
+                    {
+                        { nameof(createUserRequest.Password), new string[] { ValidPassword.ValidationRequirements } },
+                    })
+                {
+                    Status = 400,
+                    Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1",
+                },
+            });
+    }
+
+    [Test]
+    public async Task GivenCreateUserIsCalled_WhenEmailIsInvalid_ThenReturnCorrectly()
+    {
+        // Arrange        
+        var createUserRequest = new CreateUserRequest(null!, "password123");
+        var userService = Substitute.For<IUserService>();
+
+        var sut = () => UserEndpointsV1.CreateUserAsync(userService, createUserRequest, default);
+
+        // Act
+        var result = await sut.Invoke();
+
+        // Assert
+        result.Should().BeOfType<ValidationProblem>().Which.Should().BeEquivalentTo(
+            new
+            {
+                StatusCode = 400,
+                ProblemDetails = new HttpValidationProblemDetails(
+                    new Dictionary<string, string[]>
+                    {
+                        { nameof(createUserRequest.Email), new string[] { ValidEmailAddress.ValidationRequirements } },
+                    })
+                {
+                    Status = 400,
+                    Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1",
+                },
             });
     }
 }

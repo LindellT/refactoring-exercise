@@ -1,12 +1,14 @@
 ﻿using Domain;
+using OneOf;
+using OneOf.Types;
 
 namespace ApplicationServices;
 
 public interface IUserRepository
 {
-    Task<User?> CreateUserAsync(ValidEmailAddress email, HashedPassword hashedPassword, CancellationToken cancellationToken);
+    Task<OneOf<Success<int>, UserCreationFailedError>> CreateUserAsync(ValidEmailAddress email, HashedPassword hashedPassword, CancellationToken cancellationToken);
     
-    Task<bool> DeleteUserAsync(int id, CancellationToken cancellationToken);
+    Task<OneOf<Success, NotFound, UserDeletionFailedError>> DeleteUserAsync(int id, CancellationToken cancellationToken);
     
     Task<User?> FindUserAsync(int id, CancellationToken cancellationToken);
 
