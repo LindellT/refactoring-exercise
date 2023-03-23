@@ -87,4 +87,36 @@ internal class UserServiceTests
         // Assert
         result.Should().NotBeNull().And.BeOfType<NotFound>();
     }
+
+    [Test]
+    public async Task GivenDeleteUserIsCalled_WhenUserDeletionFails_ThenReturnsCorrectly()
+    {
+        // Arrange
+        var userRepository = Substitute.For<IUserRepository>();
+        userRepository.DeleteUserAsync(default, default).ReturnsForAnyArgs(Task.FromResult<OneOf<Success, NotFound, UserDeletionFailedError>>(new UserDeletionFailedError()));
+
+        var sut = new UserService(userRepository);
+
+        // Act
+        var result = (await sut.DeleteUserAsync(1, default)).Match<UserDeletionFailedError?>(success => null, notFound => null, userDeletionFailedError => userDeletionFailedError);
+
+        // Assert
+        result.Should().NotBeNull().And.BeOfType<UserDeletionFailedError>();
+    }
+
+    [Test]
+    public async Task GivenDeleteUserIsCalled_WhenUserDeletionSucceeds_ThenReturnsCorrectly()
+    {
+        // Arrange
+        var userRepository = Substitute.For<IUserRepository>();
+        userRepository.DeleteUserAsync(default, default).ReturnsForAnyArgs(Task.FromResult<OneOf<Success, NotFound, UserDeletionFailedError>>(new Success()));
+
+        var sut = new UserService(userRepository);
+
+        // Act
+        var result = (await sut.DeleteUserAsync(1, default)).Match<Success?>(success => success, notFound => null, userDeletionFailedError => null);
+
+        // Assert
+        result.Should().NotBeNull().And.BeOfType<Success>();
+    }
 }
