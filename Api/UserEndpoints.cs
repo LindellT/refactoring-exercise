@@ -32,19 +32,18 @@ internal static class UserEndpointsV1
     }
 
     internal static async Task<IResult> GetUserByIdAsync([FromServices] IUserService userService, int id, CancellationToken cancellationToken = default)
-    {
-        var user = await userService.FindUserAsync(id, cancellationToken);
-
-        return user is null ? TypedResults.NotFound() : TypedResults.Ok(user);
-    }
+        => (await userService.FindUserAsync(id, cancellationToken))
+            .Match<IResult>(
+                user => TypedResults.Ok(user),
+                notFound => TypedResults.NotFound());
 
     internal static async Task<IResult> GetUsersAsync([FromServices] IUserService userService, CancellationToken cancellationToken) => TypedResults.Ok(await userService.ListUsersAsync(cancellationToken));
 
     internal static async Task<IResult> DeleteUserAsync([FromServices] IUserService userService, int id, CancellationToken cancellationToken)
         => (await userService.DeleteUserAsync(id, cancellationToken))
             .Match<IResult>(
-                _ => TypedResults.Ok(),
-                _ => TypedResults.NotFound(),
+                success => TypedResults.Ok(),
+                notFound => TypedResults.NotFound(),
                 error => TypedResults.BadRequest(error.Message));
 
     internal static async Task<IResult> UpdateUserAsync([FromServices] IUserService userService, int id, [FromBody]UpdateUserRequest request, CancellationToken cancellationToken)

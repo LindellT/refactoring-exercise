@@ -119,4 +119,41 @@ internal class UserServiceTests
         // Assert
         result.Should().NotBeNull().And.BeOfType<Success>();
     }
+
+    [Test]
+    public async Task GivenFindUserIsCalled_WhenUserIsNotFound_ThenReturnsCorrectly()
+    {
+        // Arrange
+        var userRepository = Substitute.For<IUserRepository>();
+        userRepository.FindUserAsync(default, default).ReturnsForAnyArgs(Task.FromResult<OneOf<User, NotFound>>(new NotFound()));
+
+        var sut = new UserService(userRepository);
+
+        // Act
+        var result = (await sut.FindUserAsync(1, default)).Match<NotFound?>(userDto => null, notFound => notFound);
+
+        // Assert
+        result.Should().NotBeNull().And.BeOfType<NotFound>();
+    }
+
+    [Test]
+    public async Task GivenFindUserIsCalled_WhenUserIsFound_ThenReturnsCorrectly()
+    {
+        // Arrange
+        var userRepository = Substitute.For<IUserRepository>();
+        var emailAddress = "bill@microsoft.com";
+        var email = ValidEmailAddress.CreateFrom(emailAddress)!;
+        var password = ValidPassword.CreateFrom("password123")!;
+        var passwordSalt = ValidPasswordSalt.CreateFrom("12345678901235467890123456789012")!;
+        var user = new User(1, email, HashedPassword.CreateFrom(password, passwordSalt));
+        userRepository.FindUserAsync(default, default).ReturnsForAnyArgs(Task.FromResult<OneOf<User, NotFound>>(user));
+
+        var sut = new UserService(userRepository);
+
+        // Act
+        var result = (await sut.FindUserAsync(1, default)).Match<UserDTO?>(userDto => userDto, notFound => null);
+
+        // Assert
+        result.Should().NotBeNull().And.BeOfType<UserDTO>().And.BeEquivalentTo(new UserDTO(1, emailAddress));
+    }
 }

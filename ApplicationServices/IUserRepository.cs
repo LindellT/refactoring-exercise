@@ -10,7 +10,7 @@ public interface IUserRepository
     
     Task<OneOf<Success, NotFound, UserDeletionFailedError>> DeleteUserAsync(int id, CancellationToken cancellationToken);
     
-    Task<User?> FindUserAsync(int id, CancellationToken cancellationToken);
+    Task<OneOf<User, NotFound>> FindUserAsync(int id, CancellationToken cancellationToken);
 
     Task<User?> FindUserByEmailAsync(ValidEmailAddress email, CancellationToken cancellationToken);
     

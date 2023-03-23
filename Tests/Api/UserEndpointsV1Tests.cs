@@ -16,7 +16,7 @@ internal class UserEndpointsV1Tests
     {
         // Arrange
         var userService = Substitute.For<IUserService>();
-        userService.FindUserAsync(default, default).ReturnsNull();
+        userService.FindUserAsync(default, default).Returns(Task.FromResult<OneOf<UserDTO, OneOf.Types.NotFound>>(new OneOf.Types.NotFound()));
 
         var sut = () => UserEndpointsV1.GetUserByIdAsync(userService, default);
 

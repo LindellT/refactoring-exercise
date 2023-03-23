@@ -44,7 +44,17 @@ internal sealed class UserRepository : IUserRepository
         return await _userContext.SaveChangesAsync(cancellationToken) == 1 ? new Success() : new UserDeletionFailedError();
     }
 
-    public async Task<User?> FindUserAsync(int id, CancellationToken cancellationToken) => await _userContext.Users.FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
+    public async Task<OneOf<User, NotFound>> FindUserAsync(int id, CancellationToken cancellationToken)
+    {
+        var user = await _userContext.Users.FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
+        
+        if (user is null)
+        {
+            return new NotFound();
+        }
+        
+        return (User)user!;
+    }
 
     public async Task<User?> FindUserByEmailAsync(ValidEmailAddress email, CancellationToken cancellationToken)
         => await _userContext.Users.FirstOrDefaultAsync(u => u.Email.Address == email.Address, cancellationToken);

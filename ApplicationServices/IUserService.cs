@@ -1,5 +1,4 @@
-﻿using Domain;
-using OneOf.Types;
+﻿using OneOf.Types;
 using OneOf;
 
 namespace ApplicationServices;
@@ -10,7 +9,7 @@ public interface IUserService
 
     Task<OneOf<Success, NotFound, UserDeletionFailedError>> DeleteUserAsync(int id, CancellationToken cancellationToken);
 
-    Task<UserDTO?> FindUserAsync(int id, CancellationToken cancellationToken);
+    Task<OneOf<UserDTO, NotFound>> FindUserAsync(int id, CancellationToken cancellationToken);
 
     Task<List<UserDTO>> ListUsersAsync(CancellationToken cancellationToken);
 
