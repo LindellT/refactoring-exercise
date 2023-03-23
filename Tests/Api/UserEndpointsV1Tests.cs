@@ -12,7 +12,7 @@ namespace Tests.Api;
 internal class UserEndpointsV1Tests
 {
     [Test]
-    public async Task GivenGetUserIsCalled_WhenUserDoesNotExists_ThenReturnCorrectly()
+    public async Task GivenGetUserIsCalled_WhenUserDoesNotExists_ThenReturnsCorrectly()
     {
         // Arrange
         var userService = Substitute.For<IUserService>();
@@ -28,7 +28,7 @@ internal class UserEndpointsV1Tests
     }
 
     [Test]
-    public async Task GivenGetUserIsCalled_WhenUserExists_ThenReturnCorrectly()
+    public async Task GivenGetUserIsCalled_WhenUserExists_ThenReturnsCorrectly()
     {
         // Arrange        
         var user = new UserDTO(1, "a@b");
@@ -94,7 +94,7 @@ internal class UserEndpointsV1Tests
     }
 
     [Test]
-    public async Task GivenDeleteUserIsCalled_WhenDeleteFails_ThenReturnCorrectly()
+    public async Task GivenDeleteUserIsCalled_WhenDeleteFails_ThenReturnsCorrectly()
     {
         // Arrange
         var userService = Substitute.For<IUserService>();
@@ -116,7 +116,7 @@ internal class UserEndpointsV1Tests
     }
 
     [Test]
-    public async Task GivenDeleteUserIsCalled_WhenUserIsNotFound_ThenReturnCorrectly()
+    public async Task GivenDeleteUserIsCalled_WhenUserIsNotFound_ThenReturnsCorrectly()
     {
         // Arrange
         var userService = Substitute.For<IUserService>();
@@ -133,7 +133,7 @@ internal class UserEndpointsV1Tests
     }
 
     [Test]
-    public async Task GivenDeleteUserIsCalled_WhenDeleteSucceeds_ThenReturnCorrectly()
+    public async Task GivenDeleteUserIsCalled_WhenDeleteSucceeds_ThenReturnsCorrectly()
     {
         // Arrange
         var userService = Substitute.For<IUserService>();
@@ -150,7 +150,7 @@ internal class UserEndpointsV1Tests
     }
 
     [Test]
-    public async Task GivenUpdateUserIsCalled_WhenUpdateFails_ThenReturnCorrectly()
+    public async Task GivenUpdateUserIsCalled_WhenUpdateFails_ThenReturnsCorrectly()
     {
         // Arrange        
         var updateUserRequest = new UpdateUserRequest("bill@microsoft.com", default);
@@ -173,7 +173,7 @@ internal class UserEndpointsV1Tests
     }
 
     [Test]
-    public async Task GivenUpdateUserIsCalled_WhenParametersAreInvalid_ThenReturnCorrectly()
+    public async Task GivenUpdateUserIsCalled_WhenParametersAreInvalid_ThenReturnsCorrectly()
     {
         // Arrange        
         var updateUserRequest = new UpdateUserRequest(null, null);
@@ -199,7 +199,7 @@ internal class UserEndpointsV1Tests
     [TestCase("bill@microsoft.com", "password123")]
     [TestCase("bill@microsoft.com", null)]
     [TestCase(null, "password123")]
-    public async Task GivenUpdateUserIsCalled_WhenParametersAreValid_ThenReturnCorrectly(string? email, string? password)
+    public async Task GivenUpdateUserIsCalled_WhenParametersAreValid_ThenReturnsCorrectly(string? email, string? password)
     {
         // Arrange        
         var updateUserRequest = new UpdateUserRequest(email, password);
@@ -216,7 +216,7 @@ internal class UserEndpointsV1Tests
     }
 
     [Test]
-    public async Task GivenCreateUserIsCalled_WhenCreationFails_ThenReturnCorrectly()
+    public async Task GivenCreateUserIsCalled_WhenCreationFails_ThenReturnsCorrectly()
     {
         // Arrange
         var createUserRequest = new CreateUserRequest("bill@microsoft.com", "password123");
@@ -238,7 +238,7 @@ internal class UserEndpointsV1Tests
     }
 
     [Test]
-    public async Task GivenCreateUserIsCalled_WhenEmailIsReserved_ThenReturnCorrectly()
+    public async Task GivenCreateUserIsCalled_WhenEmailIsReserved_ThenReturnsCorrectly()
     {
         // Arrange
         var createUserRequest = new CreateUserRequest("bill@microsoft.com", "password123");
@@ -260,7 +260,7 @@ internal class UserEndpointsV1Tests
     }
 
     [Test]
-    public async Task GivenCreateUserIsCalled_WhenCreationSucceeds_ThenReturnCorrectly()
+    public async Task GivenCreateUserIsCalled_WhenCreationSucceeds_ThenReturnsCorrectly()
     {
         // Arrange        
         var createUserRequest = new CreateUserRequest("bill@microsoft.com", "password123");
@@ -284,7 +284,7 @@ internal class UserEndpointsV1Tests
     }
 
     [Test]
-    public async Task GivenCreateUserIsCalled_WhenEmailAndPasswordAreInvalid_ThenReturnCorrectly()
+    public async Task GivenCreateUserIsCalled_WhenEmailAndPasswordAreInvalid_ThenReturnsCorrectly()
     {
         // Arrange        
         var createUserRequest = new CreateUserRequest(null!, null!);
@@ -314,7 +314,7 @@ internal class UserEndpointsV1Tests
     }
 
     [Test]
-    public async Task GivenCreateUserIsCalled_WhenPasswordIsInvalid_ThenReturnCorrectly()
+    public async Task GivenCreateUserIsCalled_WhenPasswordIsInvalid_ThenReturnsCorrectly()
     {
         // Arrange        
         var createUserRequest = new CreateUserRequest("bill@microsoft.com", null!);
@@ -343,7 +343,7 @@ internal class UserEndpointsV1Tests
     }
 
     [Test]
-    public async Task GivenCreateUserIsCalled_WhenEmailIsInvalid_ThenReturnCorrectly()
+    public async Task GivenCreateUserIsCalled_WhenEmailIsInvalid_ThenReturnsCorrectly()
     {
         // Arrange        
         var createUserRequest = new CreateUserRequest(null!, "password123");
