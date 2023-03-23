@@ -22,7 +22,7 @@ internal class UserServiceTests
         var sut = new UserService(userRepository);
 
         // Act
-        (await sut.CreateUserAsync(command, default)).TryPickT1(out var result, out var _);
+        var result = (await sut.CreateUserAsync(command, default)).Match<EmailReservedError?>(success => null, emailReservedError => emailReservedError, userCreationFailedError => null);
 
         // Assert
         result.Should().NotBeNull().And.BeOfType<EmailReservedError>();
@@ -43,7 +43,7 @@ internal class UserServiceTests
         var sut = new UserService(userRepository);
 
         // Act
-        (await sut.CreateUserAsync(command, default)).TryPickT2(out var result, out var _);
+        var result = (await sut.CreateUserAsync(command, default)).Match<UserCreationFailedError?>(success => null, emailReservedError => null, userCreationFailedError => userCreationFailedError);
 
         // Assert
         result.Should().NotBeNull().And.BeOfType<UserCreationFailedError>();
@@ -66,7 +66,7 @@ internal class UserServiceTests
         var sut = new UserService(userRepository);
 
         // Act
-        (await sut.CreateUserAsync(command, default)).TryPickT0(out var result, out var _);
+        var result = (await sut.CreateUserAsync(command, default)).Match<Success<int>?>(success => success, emailReservedError => null, userCreationFailedError => null);
 
         // Assert
         result.Should().BeOfType<Success<int>>().Which.Value.Should().Be(1);
@@ -82,7 +82,7 @@ internal class UserServiceTests
         var sut = new UserService(userRepository);
 
         // Act
-        var result = (await sut.DeleteUserAsync(1, default)).Match<NotFound?>(x => null, y => y, t => null);
+        var result = (await sut.DeleteUserAsync(1, default)).Match<NotFound?>(success => null, notFound => notFound, userDeletionFailedError => null);
 
         // Assert
         result.Should().NotBeNull().And.BeOfType<NotFound>();
