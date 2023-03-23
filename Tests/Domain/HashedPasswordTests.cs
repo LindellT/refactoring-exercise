@@ -15,6 +15,6 @@ internal class HashedPasswordTests
         var result = HashedPassword.CreateFrom(ValidPassword.CreateFrom(password)!, ValidPasswordSalt.CreateFrom(salt)!);
 
         // Assert
-        result.Hash.Should().NotContain(password).And.HaveLength(64);
+        result?.Should().NotBeNull().And.BeOfType<HashedPassword>().Which.Hash.Should().NotContain(password).And.HaveLength(64);
     }
 }

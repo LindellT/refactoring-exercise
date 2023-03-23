@@ -25,7 +25,7 @@ internal class UserServiceTests
         (await sut.CreateUserAsync(command, default)).TryPickT1(out var result, out var _);
 
         // Assert
-        result.Should().BeOfType<EmailReservedError>();
+        result?.Should().NotBeNull().And.BeOfType<EmailReservedError>();
     }
 
     [Test]
@@ -46,7 +46,7 @@ internal class UserServiceTests
         (await sut.CreateUserAsync(command, default)).TryPickT2(out var result, out var _);
 
         // Assert
-        result.Should().BeOfType<UserCreationFailedError>();
+        result?.Should().NotBeNull().And.BeOfType<UserCreationFailedError>();
     }
 
     [Test]
@@ -85,6 +85,6 @@ internal class UserServiceTests
         (await sut.DeleteUserAsync(1, default)).TryPickT1(out var result, out _);
 
         // Assert
-        result.Should().BeOfType<NotFound>();
+        result.Should().NotBeNull().And.BeOfType<NotFound>();
     }
 }

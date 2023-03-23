@@ -24,7 +24,7 @@ internal class UserEndpointsV1Tests
         var result = await sut.Invoke();
 
         // Assert
-        result.Should().BeOfType<Microsoft.AspNetCore.Http.HttpResults.NotFound>().Which.StatusCode.Should().Be(404);
+        result?.Should().NotBeNull().And.BeOfType<Microsoft.AspNetCore.Http.HttpResults.NotFound>().Which.StatusCode.Should().Be(404);
     }
 
     [Test]
@@ -41,7 +41,7 @@ internal class UserEndpointsV1Tests
         var result = await sut.Invoke();
 
         // Assert
-        result.Should().BeOfType<Ok<UserDTO>>().Which.Should().BeEquivalentTo(
+        result?.Should().NotBeNull().And.BeOfType<Ok<UserDTO>>().Which.Should().BeEquivalentTo(
             new
             {
                 StatusCode = 200,
@@ -63,7 +63,7 @@ internal class UserEndpointsV1Tests
         var result = await sut.Invoke();
 
         // Assert
-        result.Should().BeOfType<Ok<List<UserDTO>>>().Which.Should().BeEquivalentTo(
+        result?.Should().NotBeNull().And.BeOfType<Ok<List<UserDTO>>>().Which.Should().BeEquivalentTo(
             new
             {
                 StatusCode = 200,
@@ -85,7 +85,7 @@ internal class UserEndpointsV1Tests
         var result = await sut.Invoke();
 
         // Assert
-        result.Should().BeOfType<Ok<List<UserDTO>>>().Which.Should().BeEquivalentTo(
+        result?.Should().NotBeNull().And.BeOfType<Ok<List<UserDTO>>>().Which.Should().BeEquivalentTo(
             new
             {
                 StatusCode = 200,
@@ -107,7 +107,7 @@ internal class UserEndpointsV1Tests
         var result = await sut.Invoke();
 
         // Assert
-        result.Should().BeOfType<BadRequest<string>>().Which.Should().BeEquivalentTo(
+        result?.Should().NotBeNull().And.BeOfType<BadRequest<string>>().Which.Should().BeEquivalentTo(
             new
             {
                 StatusCode = 400,
@@ -129,7 +129,7 @@ internal class UserEndpointsV1Tests
         var result = await sut.Invoke();
 
         // Assert
-        result.Should().BeOfType<Microsoft.AspNetCore.Http.HttpResults.NotFound>().Which.StatusCode.Should().Be(404);
+        result?.Should().NotBeNull().And.BeOfType<Microsoft.AspNetCore.Http.HttpResults.NotFound>().Which.StatusCode.Should().Be(404);
     }
 
     [Test]
@@ -146,7 +146,7 @@ internal class UserEndpointsV1Tests
         var result = await sut.Invoke();
 
         // Assert
-        result.Should().BeOfType<Ok>().Which.StatusCode.Should().Be(200);
+        result?.Should().NotBeNull().And.BeOfType<Ok>().Which.StatusCode.Should().Be(200);
     }
 
     [Test]
@@ -164,7 +164,7 @@ internal class UserEndpointsV1Tests
         var result = await sut.Invoke();
 
         // Assert
-        result.Should().BeOfType<BadRequest<string>>().Which.Should().BeEquivalentTo(
+        result?.Should().NotBeNull().And.BeOfType<BadRequest<string>>().Which.Should().BeEquivalentTo(
             new
             {
                 StatusCode = 400,
@@ -187,7 +187,7 @@ internal class UserEndpointsV1Tests
         var result = await sut.Invoke();
 
         // Assert
-        result.Should().BeOfType<BadRequest<string>>().Which.Should().BeEquivalentTo(
+        result?.Should().NotBeNull().And.BeOfType<BadRequest<string>>().Which.Should().BeEquivalentTo(
             new
             {
                 StatusCode = 400,
@@ -212,7 +212,7 @@ internal class UserEndpointsV1Tests
         var result = await sut.Invoke();
 
         // Assert
-        result.Should().BeOfType<Ok>().Which.StatusCode.Should().Be(200);
+        result?.Should().NotBeNull().And.BeOfType<Ok>().Which.StatusCode.Should().Be(200);
     }
 
     [Test]
@@ -229,7 +229,7 @@ internal class UserEndpointsV1Tests
         var result = await sut.Invoke();
 
         // Assert
-        result.Should().BeOfType<BadRequest<string>>().Which.Should().BeEquivalentTo(
+        result?.Should().NotBeNull().And.BeOfType<BadRequest<string>>().Which.Should().BeEquivalentTo(
             new
             {
                 StatusCode = 400,
@@ -251,7 +251,7 @@ internal class UserEndpointsV1Tests
         var result = await sut.Invoke();
 
         // Assert
-        result.Should().BeOfType<BadRequest<string>>().Which.Should().BeEquivalentTo(
+        result?.Should().NotBeNull().And.BeOfType<BadRequest<string>>().Which.Should().BeEquivalentTo(
             new
             {
                 StatusCode = 400,
@@ -274,7 +274,7 @@ internal class UserEndpointsV1Tests
         var result = await sut.Invoke();
 
         // Assert
-        result.Should().BeOfType<CreatedAtRoute>().Which.Should().BeEquivalentTo(
+        result?.Should().NotBeNull().And.BeOfType<CreatedAtRoute>().Which.Should().BeEquivalentTo(
             new
             {
                 StatusCode = 201,
@@ -296,7 +296,7 @@ internal class UserEndpointsV1Tests
         var result = await sut.Invoke();
 
         // Assert
-        result.Should().BeOfType<ValidationProblem>().Which.Should().BeEquivalentTo(
+        result?.Should().NotBeNull().And.BeOfType<ValidationProblem>().Which.Should().BeEquivalentTo(
             new
             {
                 StatusCode = 400,
@@ -326,7 +326,7 @@ internal class UserEndpointsV1Tests
         var result = await sut.Invoke();
 
         // Assert
-        result.Should().BeOfType<ValidationProblem>().Which.Should().BeEquivalentTo(
+        result?.Should().NotBeNull().And.BeOfType<ValidationProblem>().Which.Should().BeEquivalentTo(
             new
             {
                 StatusCode = 400,
@@ -355,7 +355,7 @@ internal class UserEndpointsV1Tests
         var result = await sut.Invoke();
 
         // Assert
-        result.Should().BeOfType<ValidationProblem>().Which.Should().BeEquivalentTo(
+        result?.Should().NotBeNull().And.BeOfType<ValidationProblem>().Which.Should().BeEquivalentTo(
             new
             {
                 StatusCode = 400,

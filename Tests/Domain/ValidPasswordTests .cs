@@ -15,7 +15,7 @@ internal class ValidPasswordTests
         var result = ValidPassword.CreateFrom(password);
 
         // Assert
-        result.Should().BeNull();
+        result?.Should().BeNull();
     }
 
     [Test]
@@ -28,6 +28,6 @@ internal class ValidPasswordTests
         var result = ValidPassword.CreateFrom(password);
 
         // Assert
-        result.Should().BeOfType<ValidPassword>().Which.Password.Should().Be(password);
+        result.Should().NotBeNull().And.BeOfType<ValidPassword>().Which.Password.Should().Be(password);
     }
 }
