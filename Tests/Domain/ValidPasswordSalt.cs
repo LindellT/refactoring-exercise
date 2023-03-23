@@ -14,7 +14,7 @@ internal class ValidPasswordSaltTests
         var result = ValidPasswordSalt.CreateFrom(salt);
 
         // Assert
-        result?.Should().BeNull();
+        result.Should().BeNull();
     }
 
     [Test]
@@ -27,6 +27,6 @@ internal class ValidPasswordSaltTests
         var result = ValidPasswordSalt.CreateFrom(salt);
 
         // Assert
-        result?.Should().NotBeNull().And.BeOfType<ValidPasswordSalt>().Which.Salt.Should().Be(salt);
+        result.Should().NotBeNull().And.BeOfType<ValidPasswordSalt>().Which.Salt.Should().Be(salt);
     }
 }

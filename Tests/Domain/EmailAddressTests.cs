@@ -19,7 +19,7 @@ internal class EmailAddressTests
         var result = ValidEmailAddress.CreateFrom(email);
 
         // Assert
-        result?.Should().BeNull();
+        result.Should().BeNull();
     }
 
     [Test]
@@ -32,6 +32,6 @@ internal class EmailAddressTests
         var result = ValidEmailAddress.CreateFrom(email);
 
         // Assert
-        result?.Should().BeOfType<ValidEmailAddress>().Which.Address.Should().Be(email);
+        result.Should().BeOfType<ValidEmailAddress>().Which.Address.Should().Be(email);
     }
 }

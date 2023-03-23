@@ -15,7 +15,7 @@ internal class ValidPasswordTests
         var result = ValidPassword.CreateFrom(password);
 
         // Assert
-        result?.Should().BeNull();
+        result.Should().BeNull();
     }
 
     [Test]

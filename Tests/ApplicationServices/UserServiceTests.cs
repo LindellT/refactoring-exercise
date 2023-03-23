@@ -25,7 +25,7 @@ internal class UserServiceTests
         (await sut.CreateUserAsync(command, default)).TryPickT1(out var result, out var _);
 
         // Assert
-        result?.Should().NotBeNull().And.BeOfType<EmailReservedError>();
+        result.Should().NotBeNull().And.BeOfType<EmailReservedError>();
     }
 
     [Test]
@@ -46,7 +46,7 @@ internal class UserServiceTests
         (await sut.CreateUserAsync(command, default)).TryPickT2(out var result, out var _);
 
         // Assert
-        result?.Should().NotBeNull().And.BeOfType<UserCreationFailedError>();
+        result.Should().NotBeNull().And.BeOfType<UserCreationFailedError>();
     }
 
     [Test]
@@ -69,8 +69,7 @@ internal class UserServiceTests
         (await sut.CreateUserAsync(command, default)).TryPickT0(out var result, out var _);
 
         // Assert
-        result.Should().BeOfType<Success<int>>()
-            .Which.Value.Should().Be(1);
+        result.Should().BeOfType<Success<int>>().Which.Value.Should().Be(1);
     }
 
     [Test]
@@ -78,11 +77,12 @@ internal class UserServiceTests
     {
         // Arrange
         var userRepository = Substitute.For<IUserRepository>();
+        userRepository.DeleteUserAsync(default, default).ReturnsForAnyArgs(Task.FromResult<OneOf<Success, NotFound, UserDeletionFailedError>>(new NotFound()));
 
         var sut = new UserService(userRepository);
 
         // Act
-        (await sut.DeleteUserAsync(1, default)).TryPickT1(out var result, out _);
+        var result = (await sut.DeleteUserAsync(1, default)).Match<NotFound?>(x => null, y => y, t => null);
 
         // Assert
         result.Should().NotBeNull().And.BeOfType<NotFound>();

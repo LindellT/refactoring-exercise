@@ -17,7 +17,7 @@ internal class UpdateUserCommandTests
         var result = UpdateUserCommand.CreateFrom(userId, email, password);
 
         // Assert
-        result?.Should().BeNull();
+        result.Should().BeNull();
     }
 
     [Test]
@@ -35,7 +35,7 @@ internal class UpdateUserCommandTests
         var result = UpdateUserCommand.CreateFrom(userId, validEmail, validPassword);
 
         // Assert
-        result?.Should().NotBeNull().And.BeOfType<UpdateUserCommand>().Which.Should().BeEquivalentTo(
+        result.Should().NotBeNull().And.BeOfType<UpdateUserCommand>().Which.Should().BeEquivalentTo(
             new 
             {
                 Id = userId,
