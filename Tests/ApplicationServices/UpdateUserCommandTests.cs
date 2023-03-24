@@ -6,7 +6,7 @@ namespace Tests.ApplicationServices;
 internal sealed class UpdateUserCommandTests
 {
     [Test]
-    public void GivenSmartConstructerIsCalled_WhenParametersAreNotValid_ThenReturnsNull()
+    public void GivenSmartConstructerIsCalled_WhenParametersAreNotValid_ThenReturnsCorrectly()
     {
         // Arrange
         var userId = 1;
@@ -14,10 +14,10 @@ internal sealed class UpdateUserCommandTests
         var password = ValidPassword.CreateFrom(null);
 
         // Act
-        var result = UpdateUserCommand.CreateFrom(userId, email, password);
+        var result = UpdateUserCommand.CreateFrom(userId, email, password).Match<UpdateUserCommandValidationError?>(updateUserCommand => null, updateUserCommandValidationError => updateUserCommandValidationError);
 
         // Assert
-        result.Should().BeNull();
+        result.Should().NotBeNull().And.BeOfType<UpdateUserCommandValidationError>();
     }
 
     [Test]
@@ -32,7 +32,7 @@ internal sealed class UpdateUserCommandTests
         var validPassword = ValidPassword.CreateFrom(password);
 
         // Act
-        var result = UpdateUserCommand.CreateFrom(userId, validEmail, validPassword);
+        var result = UpdateUserCommand.CreateFrom(userId, validEmail, validPassword).Match<UpdateUserCommand?>(updateUserCommand => updateUserCommand, updateUserCommandValidationError => null);
 
         // Assert
         result.Should().NotBeNull().And.BeOfType<UpdateUserCommand>().Which.Should().BeEquivalentTo(

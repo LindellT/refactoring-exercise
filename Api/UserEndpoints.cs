@@ -1,6 +1,8 @@
 ﻿using ApplicationServices;
 using Domain;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using System.Threading;
 
 namespace Api;
 
@@ -37,7 +39,8 @@ internal static class UserEndpointsV1
                 user => TypedResults.Ok(user),
                 notFound => TypedResults.NotFound());
 
-    internal static async Task<IResult> GetUsersAsync([FromServices] IUserService userService, CancellationToken cancellationToken) => TypedResults.Ok(await userService.ListUsersAsync(cancellationToken));
+    internal static async Task<IResult> GetUsersAsync([FromServices] IUserService userService, CancellationToken cancellationToken)
+        => TypedResults.Ok(await userService.ListUsersAsync(cancellationToken));
 
     internal static async Task<IResult> DeleteUserAsync([FromServices] IUserService userService, int id, CancellationToken cancellationToken)
         => (await userService.DeleteUserAsync(id, cancellationToken))
@@ -46,22 +49,11 @@ internal static class UserEndpointsV1
                 notFound => TypedResults.NotFound(),
                 error => TypedResults.BadRequest(error.Message));
 
-    internal static async Task<IResult> UpdateUserAsync([FromServices] IUserService userService, int id, [FromBody]UpdateUserRequest request, CancellationToken cancellationToken)
-    {   
-        var updateUserCommand = UpdateUserCommand.CreateFrom(id, ValidEmailAddress.CreateFrom(request.Email), ValidPassword.CreateFrom(request.Password));
-
-        if (updateUserCommand is null)
-        {
-            return TypedResults.BadRequest(UpdateUserCommand.ValidationRequirements);
-        }
-
-        return (await userService.UpdateUserAsync(updateUserCommand, cancellationToken))
-            .Match<IResult>(
-                success => TypedResults.Ok(),
-                notFound => TypedResults.NotFound(),
-                emailReservedError => TypedResults.BadRequest(emailReservedError.Message),
-                userUpdateFailedError => TypedResults.BadRequest(userUpdateFailedError.Message));
-    }
+    internal static async Task<IResult> UpdateUserAsync([FromServices] IUserService userService, int id, [FromBody] UpdateUserRequest request, CancellationToken cancellationToken)
+        => await UpdateUserCommand.CreateFrom(id, ValidEmailAddress.CreateFrom(request.Email), ValidPassword.CreateFrom(request.Password))
+            .Match<Task<IResult>>(
+                async updateUserCommand => await ExecuteUpdateUserCommand(userService, updateUserCommand, cancellationToken),
+                updateUserCommandValidationError => Task.FromResult<IResult>(TypedResults.BadRequest(updateUserCommandValidationError!.Message)));
 
     internal static async Task<IResult> CreateUserAsync([FromServices] IUserService userService, [FromBody] CreateUserRequest request, CancellationToken cancellationToken)
     {
@@ -81,14 +73,29 @@ internal static class UserEndpointsV1
 
         if (validationProblems.Any())
         {
-            var errors = validationProblems.ToDictionary(p => p.field, p => validationProblems.Where(vp => vp.field == p.field).Select(vp => vp.description).ToArray());
-            return TypedResults.ValidationProblem(errors);
+            return CreateValidationProblemResult(validationProblems);
         }
-        
+
         return (await userService.CreateUserAsync(new(email!, password!), cancellationToken))
             .Match<IResult>(
                 success => TypedResults.CreatedAtRoute(nameof(GetUserByIdAsync), new { id = success.Value }),
                 emailReserved => TypedResults.BadRequest(emailReserved.Message),
                 userCreationFailed => TypedResults.BadRequest(userCreationFailed.Message));
     }
+
+    private static async Task<IResult> ExecuteUpdateUserCommand(IUserService userService, UpdateUserCommand updateUserCommand, CancellationToken cancellationToken)
+        => (await userService.UpdateUserAsync(updateUserCommand, cancellationToken))
+            .Match<IResult>(
+                success => TypedResults.Ok(),
+                notFound => TypedResults.NotFound(),
+                emailReservedError => TypedResults.BadRequest(emailReservedError.Message),
+                userUpdateFailedError => TypedResults.BadRequest(userUpdateFailedError.Message));
+
+    private static IResult CreateValidationProblemResult(List<(string field, string description)> validationProblems)
+        => TypedResults.ValidationProblem(
+            validationProblems.ToDictionary(
+                p => p.field,
+                p => validationProblems.Where(vp => vp.field == p.field)
+                    .Select(vp => vp.description)
+                    .ToArray()));
 }

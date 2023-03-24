@@ -228,7 +228,7 @@ internal sealed class UserEndpointsV1Tests
             new
             {
                 StatusCode = 400,
-                Value = UpdateUserCommand.ValidationRequirements,
+                Value = "Either email or password has to be valid.",
             });
     }
 

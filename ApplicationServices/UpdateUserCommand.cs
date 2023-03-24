@@ -1,11 +1,10 @@
 ﻿using Domain;
+using OneOf;
 
 namespace ApplicationServices;
 
 public sealed record UpdateUserCommand
 {
-    public const string ValidationRequirements = "Either email or password has to be valid.";
-
     private UpdateUserCommand(int id, ValidEmailAddress? emailAddress, ValidPassword? password)
     {
         Id = id;
@@ -20,11 +19,11 @@ public sealed record UpdateUserCommand
 
     public ValidPassword? Password { get; init; }
 
-    public static UpdateUserCommand? CreateFrom(int id, ValidEmailAddress? emailAddress, ValidPassword? password)
+    public static OneOf<UpdateUserCommand, UpdateUserCommandValidationError> CreateFrom(int id, ValidEmailAddress? emailAddress, ValidPassword? password)
     {
         if (emailAddress is null && password is null)
         {
-            return null;
+            return new UpdateUserCommandValidationError();
         }
 
         return new UpdateUserCommand(id, emailAddress, password);

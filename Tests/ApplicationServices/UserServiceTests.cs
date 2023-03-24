@@ -165,7 +165,7 @@ internal sealed class UserServiceTests
         var emailAddress = "bill@microsoft.com";
         var email = ValidEmailAddress.CreateFrom(emailAddress)!;
         var password = ValidPassword.CreateFrom("password123")!;
-        var updateUserCommand = UpdateUserCommand.CreateFrom(1, email, password)!;
+        var updateUserCommand = UpdateUserCommand.CreateFrom(1, email, password).Match<UpdateUserCommand?>(command => command, err => null)!;
         userRepository.FindUserAsync(default!, default).ReturnsForAnyArgs(Task.FromResult<OneOf<User, NotFound>>(new NotFound()));
 
         var sut = new UserService(userRepository);
@@ -190,7 +190,7 @@ internal sealed class UserServiceTests
         var userFoundWithEmail = new User(2, email, HashedPassword.CreateFrom(password, passwordSalt));
         userRepository.FindUserAsync(default, default).ReturnsForAnyArgs(Task.FromResult<OneOf<User, NotFound>>(userFoundWithId));
         userRepository.FindUserByEmailAsync(default!, default).ReturnsForAnyArgs(Task.FromResult<OneOf<User, NotFound>>(userFoundWithEmail));
-        var updateUserCommand = UpdateUserCommand.CreateFrom(1, email, password)!;
+        var updateUserCommand = UpdateUserCommand.CreateFrom(1, email, password).Match<UpdateUserCommand?>(command => command, err => null)!;
         
         var sut = new UserService(userRepository);
 
@@ -215,7 +215,7 @@ internal sealed class UserServiceTests
         userRepository.FindUserAsync(default, default).ReturnsForAnyArgs(Task.FromResult<OneOf<User, NotFound>>(userFoundWithId));
         userRepository.FindUserByEmailAsync(default!, default).ReturnsForAnyArgs(Task.FromResult<OneOf<User, NotFound>>(userFoundWithEmail));
         userRepository.UpdateUserAsync(default!, default).ReturnsForAnyArgs(Task.FromResult<OneOf<Success, NotFound, UserUpdateFailedError>>(new UserUpdateFailedError()));
-        var updateUserCommand = UpdateUserCommand.CreateFrom(1, email, password)!;
+        var updateUserCommand = UpdateUserCommand.CreateFrom(1, email, password).Match<UpdateUserCommand?>(command => command, err => null)!;
 
         var sut = new UserService(userRepository);
 
@@ -240,7 +240,7 @@ internal sealed class UserServiceTests
         userRepository.FindUserAsync(default, default).ReturnsForAnyArgs(Task.FromResult<OneOf<User, NotFound>>(userFoundWithId));
         userRepository.FindUserByEmailAsync(default!, default).ReturnsForAnyArgs(Task.FromResult<OneOf<User, NotFound>>(userFoundWithEmail));
         userRepository.UpdateUserAsync(default!, default).ReturnsForAnyArgs(Task.FromResult<OneOf<Success, NotFound, UserUpdateFailedError>>(new Success()));
-        var updateUserCommand = UpdateUserCommand.CreateFrom(1, email, password)!;
+        var updateUserCommand = UpdateUserCommand.CreateFrom(1, email, password).Match<UpdateUserCommand?>(command => command, err => null)!;
 
         var sut = new UserService(userRepository);
 
