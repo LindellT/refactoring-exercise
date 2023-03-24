@@ -55,14 +55,12 @@ internal static class UserEndpointsV1
             return TypedResults.BadRequest(UpdateUserCommand.ValidationRequirements);
         }
 
-        (var success, var error) = await userService.UpdateUserAsync(updateUserCommand, cancellationToken);
-
-        if (!success)
-        {
-            return TypedResults.BadRequest(error);
-        }
-
-        return TypedResults.Ok();
+        return (await userService.UpdateUserAsync(updateUserCommand, cancellationToken))
+            .Match<IResult>(
+                success => TypedResults.Ok(),
+                notFound => TypedResults.NotFound(),
+                emailReservedError => TypedResults.BadRequest(emailReservedError.Message),
+                userUpdateFailedError => TypedResults.BadRequest(userUpdateFailedError.Message));
     }
 
     internal static async Task<IResult> CreateUserAsync([FromServices] IUserService userService, [FromBody] CreateUserRequest request, CancellationToken cancellationToken)

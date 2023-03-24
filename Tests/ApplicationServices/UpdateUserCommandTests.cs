@@ -3,7 +3,7 @@ using Domain;
 
 namespace Tests.ApplicationServices;
 
-internal class UpdateUserCommandTests
+internal sealed class UpdateUserCommandTests
 {
     [Test]
     public void GivenSmartConstructerIsCalled_WhenParametersAreNotValid_ThenReturnsNull()

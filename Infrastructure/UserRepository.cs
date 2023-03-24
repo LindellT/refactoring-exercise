@@ -56,23 +56,31 @@ internal sealed class UserRepository : IUserRepository
         return (User)user!;
     }
 
-    public async Task<User?> FindUserByEmailAsync(ValidEmailAddress email, CancellationToken cancellationToken)
-        => await _userContext.Users.FirstOrDefaultAsync(u => u.Email.Address == email.Address, cancellationToken);
+    public async Task<OneOf<User, NotFound>> FindUserByEmailAsync(ValidEmailAddress email, CancellationToken cancellationToken)
+    {
+        var user = await _userContext.Users.FirstOrDefaultAsync(u => u.Email.Address == email.Address, cancellationToken);
+        if (user is null)
+        {
+            return new NotFound();
+        }
+
+        return (User)user!;
+    }
 
     public async Task<List<User>> ListUsersAsync(CancellationToken cancellationToken) => await _userContext.Users.Select(u => (User)u!).ToListAsync(cancellationToken);
 
-    public async Task<bool> UpdateUserAsync(User user, CancellationToken cancellationToken)
+    public async Task<OneOf<Success, NotFound, UserUpdateFailedError>> UpdateUserAsync(User user, CancellationToken cancellationToken)
     {
         var userEntity = await _userContext.Users.FirstOrDefaultAsync(u => u.Id == user.Id, cancellationToken);
 
         if (userEntity is null)
         {
-            return false;
+            return new NotFound();
         }
 
         userEntity.Email = user.Email;
         userEntity.HashedPassword = user.HashedPassword;
 
-        return await _userContext.SaveChangesAsync(cancellationToken) == 1;        
+        return await _userContext.SaveChangesAsync(cancellationToken) == 1 ? new Success() : new UserUpdateFailedError();        
     }
 }

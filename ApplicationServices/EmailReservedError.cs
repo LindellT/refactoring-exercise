@@ -1,6 +1,6 @@
 ﻿namespace ApplicationServices;
 
-public class EmailReservedError : Exception
+public sealed class EmailReservedError : Exception
 {
     public EmailReservedError() : base("Email reserved.")
     {

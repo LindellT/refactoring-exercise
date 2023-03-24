@@ -13,5 +13,5 @@ public interface IUserService
 
     Task<List<UserDTO>> ListUsersAsync(CancellationToken cancellationToken);
 
-    Task<(bool success, string? error)> UpdateUserAsync(UpdateUserCommand command, CancellationToken cancellationToken);
+    Task<OneOf<Success, NotFound, EmailReservedError, UserUpdateFailedError>> UpdateUserAsync(UpdateUserCommand command, CancellationToken cancellationToken);
 }

@@ -9,7 +9,7 @@ using OneOf.Types;
 
 namespace Tests.Api;
 
-internal class UserEndpointsV1Tests
+internal sealed class UserEndpointsV1Tests
 {
     [Test]
     public async Task GivenGetUserIsCalled_WhenUserDoesNotExists_ThenReturnsCorrectly()
@@ -154,9 +154,8 @@ internal class UserEndpointsV1Tests
     {
         // Arrange        
         var updateUserRequest = new UpdateUserRequest("bill@microsoft.com", default);
-        var errorMessage = "Houston we have a problem.";
         var userService = Substitute.For<IUserService>();
-        userService.UpdateUserAsync(default!, default).ReturnsForAnyArgs((false, errorMessage));
+        userService.UpdateUserAsync(default!, default).ReturnsForAnyArgs(Task.FromResult<OneOf<Success, OneOf.Types.NotFound, EmailReservedError, UserUpdateFailedError>>(new UserUpdateFailedError()));
 
         var sut = () => UserEndpointsV1.UpdateUserAsync(userService, default, updateUserRequest, default);
 
@@ -168,8 +167,47 @@ internal class UserEndpointsV1Tests
             new
             {
                 StatusCode = 400,
-                Value = errorMessage,
+                Value = "Updating user failed.",
             });
+    }
+
+    [Test]
+    public async Task GivenUpdateUserIsCalled_WhenEmailIsReserved_ThenReturnsCorrectly()
+    {
+        // Arrange        
+        var updateUserRequest = new UpdateUserRequest("bill@microsoft.com", default);
+        var userService = Substitute.For<IUserService>();
+        userService.UpdateUserAsync(default!, default).ReturnsForAnyArgs(Task.FromResult<OneOf<Success, OneOf.Types.NotFound, EmailReservedError, UserUpdateFailedError>>(new EmailReservedError()));
+
+        var sut = () => UserEndpointsV1.UpdateUserAsync(userService, default, updateUserRequest, default);
+
+        // Act
+        var result = await sut.Invoke();
+
+        // Assert
+        result.Should().NotBeNull().And.BeOfType<BadRequest<string>>().Which.Should().BeEquivalentTo(
+            new
+            {
+                StatusCode = 400,
+                Value = "Email reserved.",
+            });
+    }
+
+    [Test]
+    public async Task GivenUpdateUserIsCalled_WhenUserIsNotFound_ThenReturnsCorrectly()
+    {
+        // Arrange        
+        var updateUserRequest = new UpdateUserRequest("bill@microsoft.com", default);
+        var userService = Substitute.For<IUserService>();
+        userService.UpdateUserAsync(default!, default).ReturnsForAnyArgs(Task.FromResult<OneOf<Success, OneOf.Types.NotFound, EmailReservedError, UserUpdateFailedError>>(new OneOf.Types.NotFound()));
+
+        var sut = () => UserEndpointsV1.UpdateUserAsync(userService, default, updateUserRequest, default);
+
+        // Act
+        var result = await sut.Invoke();
+
+        // Assert
+        result.Should().NotBeNull().And.BeOfType<Microsoft.AspNetCore.Http.HttpResults.NotFound>().Which.StatusCode.Should().Be(404);
     }
 
     [Test]
@@ -177,9 +215,8 @@ internal class UserEndpointsV1Tests
     {
         // Arrange        
         var updateUserRequest = new UpdateUserRequest(null, null);
-        var errorMessage = "Houston we have a problem.";
         var userService = Substitute.For<IUserService>();
-        userService.UpdateUserAsync(default!, default).ReturnsForAnyArgs((false, errorMessage));
+        userService.UpdateUserAsync(default!, default).ReturnsForAnyArgs(Task.FromResult<OneOf<Success, OneOf.Types.NotFound, EmailReservedError, UserUpdateFailedError>>(new UserUpdateFailedError()));
 
         var sut = () => UserEndpointsV1.UpdateUserAsync(userService, default, updateUserRequest, default);
 
@@ -204,7 +241,7 @@ internal class UserEndpointsV1Tests
         // Arrange        
         var updateUserRequest = new UpdateUserRequest(email, password);
         var userService = Substitute.For<IUserService>();
-        userService.UpdateUserAsync(default!, default).ReturnsForAnyArgs((true, default));
+        userService.UpdateUserAsync(default!, default).ReturnsForAnyArgs(Task.FromResult<OneOf<Success, OneOf.Types.NotFound, EmailReservedError, UserUpdateFailedError>>(new Success()));
 
         var sut = () => UserEndpointsV1.UpdateUserAsync(userService, default, updateUserRequest, default);
 

@@ -2,7 +2,7 @@
 
 namespace Tests.Domain;
 
-internal class EmailAddressTests
+internal sealed class EmailAddressTests
 {
     [Test]
     [TestCase("bill£microsoft.com")]

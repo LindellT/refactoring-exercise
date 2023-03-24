@@ -12,9 +12,9 @@ public interface IUserRepository
     
     Task<OneOf<User, NotFound>> FindUserAsync(int id, CancellationToken cancellationToken);
 
-    Task<User?> FindUserByEmailAsync(ValidEmailAddress email, CancellationToken cancellationToken);
+    Task<OneOf<User, NotFound>> FindUserByEmailAsync(ValidEmailAddress email, CancellationToken cancellationToken);
     
     Task<List<User>> ListUsersAsync(CancellationToken cancellationToken);
     
-    Task<bool> UpdateUserAsync(User user, CancellationToken cancellationToken);
+    Task<OneOf<Success, NotFound, UserUpdateFailedError>> UpdateUserAsync(User user, CancellationToken cancellationToken);
 }

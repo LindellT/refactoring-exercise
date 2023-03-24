@@ -2,7 +2,7 @@
 
 namespace Tests.Domain;
 
-internal class ValidPasswordTests
+internal sealed class ValidPasswordTests
 {
     [Test]
     [TestCase("1234567")]

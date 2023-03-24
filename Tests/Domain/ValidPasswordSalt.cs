@@ -2,7 +2,7 @@
 
 namespace Tests.Domain;
 
-internal class ValidPasswordSaltTests
+internal sealed class ValidPasswordSaltTests
 {
     [Test]
     public void GivenSmartConstructerIsCalled_WhenParametersAreNotValid_ThenReturnsNull()

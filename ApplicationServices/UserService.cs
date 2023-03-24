@@ -17,7 +17,10 @@ internal sealed class UserService : IUserService
 
     public async Task<OneOf<Success<int>, EmailReservedError, UserCreationFailedError>> CreateUserAsync(CreateUserCommand command, CancellationToken cancellationToken)
     {
-        if (await _userRepository.FindUserByEmailAsync(command.EmailAddress, cancellationToken) is not null)
+        User? userByEmail = null;
+        (await _userRepository.FindUserByEmailAsync(command.EmailAddress, cancellationToken)).Switch(res => userByEmail = res, _ => userByEmail = null);
+        
+        if (userByEmail is not null)
         {
             return new EmailReservedError();
         }
@@ -28,29 +31,36 @@ internal sealed class UserService : IUserService
             .Match<OneOf<Success<int>, EmailReservedError, UserCreationFailedError>>(success => success, error => error);
     }
 
-    public async Task<OneOf<Success, NotFound, UserDeletionFailedError>> DeleteUserAsync(int id, CancellationToken cancellationToken) => await _userRepository.DeleteUserAsync(id, cancellationToken);
+    public async Task<OneOf<Success, NotFound, UserDeletionFailedError>> DeleteUserAsync(int id, CancellationToken cancellationToken)
+        => await _userRepository.DeleteUserAsync(id, cancellationToken);
 
-    public async Task<OneOf<UserDTO, NotFound>> FindUserAsync(int id, CancellationToken cancellationToken) => (await _userRepository.FindUserAsync(id, cancellationToken)).Match<OneOf<UserDTO, NotFound>>(user => UserDTO.FromUser(user), notFound => notFound);
+    public async Task<OneOf<UserDTO, NotFound>> FindUserAsync(int id, CancellationToken cancellationToken)
+        => (await _userRepository.FindUserAsync(id, cancellationToken))
+            .Match<OneOf<UserDTO, NotFound>>(
+                user => UserDTO.FromUser(user),
+                notFound => notFound);
 
-    public async Task<List<UserDTO>> ListUsersAsync(CancellationToken cancellationToken) => (await _userRepository.ListUsersAsync(cancellationToken)).Select(u => UserDTO.FromUser(u)!).ToList();
+    public async Task<List<UserDTO>> ListUsersAsync(CancellationToken cancellationToken)
+        => (await _userRepository.ListUsersAsync(cancellationToken)).Select(u => UserDTO.FromUser(u)!).ToList();
 
-    public async Task<(bool success, string? error)> UpdateUserAsync(UpdateUserCommand command, CancellationToken cancellationToken)
+    public async Task<OneOf<Success, NotFound, EmailReservedError, UserUpdateFailedError>> UpdateUserAsync(UpdateUserCommand command, CancellationToken cancellationToken)
     {
         User? user = null;
         (await _userRepository.FindUserAsync(command.Id, cancellationToken)).Switch(res => user = res, _ => user = null);
 
         if (user is null)
         {
-            return (false, "User doesn't exist");
+            return new NotFound();
         }
 
         if (command.EmailAddress is not null)
         {
-            var userByEmail = await _userRepository.FindUserByEmailAsync(command.EmailAddress, cancellationToken);
+            User? userByEmail = null;
+            (await _userRepository.FindUserByEmailAsync(command.EmailAddress, cancellationToken)).Switch(res => userByEmail = res, _ => userByEmail = null);
 
             if (userByEmail is not null && userByEmail.Id != command.Id)
             {
-                return (false, "Email reserved.");
+                return new EmailReservedError();
             }
 
             user = user with { Email = command.EmailAddress, };
@@ -61,8 +71,10 @@ internal sealed class UserService : IUserService
             user = user with { HashedPassword = HashedPassword.CreateFrom(command.Password, _validPasswordSalt), };
         }
 
-        var success = await _userRepository.UpdateUserAsync(user, cancellationToken);
-
-        return (success, success ? null : "Updating user failed or no changes");
+        return (await _userRepository.UpdateUserAsync(user, cancellationToken))
+            .Match<OneOf<Success, NotFound, EmailReservedError, UserUpdateFailedError>>(
+                success => success,
+                notFound => notFound,
+                userUpdateFailedError => userUpdateFailedError);
     }
 }

@@ -2,7 +2,7 @@
 
 namespace Tests.Domain;
 
-internal class HashedPasswordTests
+internal sealed class HashedPasswordTests
 {
     [Test]
     public void GivenSmartConstructerIsCalled_WhenParametersAreValid_ThenReturnsHash()
