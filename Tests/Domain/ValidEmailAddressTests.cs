@@ -11,15 +11,15 @@ internal sealed class ValidEmailAddressTests
     [TestCase("bill@ ")]
     [TestCase(" @microsoft.com")]
     [TestCase(null)]
-    public void GivenSmartConstructerIsCalled_WhenParametersAreNotValid_ThenReturnsNull(string? email)
+    public void GivenSmartConstructerIsCalled_WhenParametersAreNotValid_ThenReturnsCorrectly(string? email)
     {
         // Arrange
 
         // Act
-        var result = ValidEmailAddress.CreateFrom(email);
+        var result = ValidEmailAddress.CreateFrom(email).Match<EmailValidationError?>(validEmailAddress => null, emailValidationError => emailValidationError);
 
         // Assert
-        result.Should().BeNull();
+        result.Should().NotBeNull().And.BeOfType<EmailValidationError>();
     }
 
     [Test]
@@ -29,9 +29,9 @@ internal sealed class ValidEmailAddressTests
         var email = "bill@microsoft.com";
 
         // Act
-        var result = ValidEmailAddress.CreateFrom(email);
+        var result = ValidEmailAddress.CreateFrom(email).Match<ValidEmailAddress?>(validEmailAddress => validEmailAddress, emailValidationError => null);
 
         // Assert
-        result.Should().BeOfType<ValidEmailAddress>().Which.Address.Should().Be(email);
+        result.Should().NotBeNull().And.BeOfType<ValidEmailAddress>().Which.Address.Should().Be(email);
     }
 }

@@ -340,8 +340,8 @@ internal sealed class UserEndpointsV1Tests
                 ProblemDetails = new HttpValidationProblemDetails(
                     new Dictionary<string, string[]>
                     {
-                        { nameof(createUserRequest.Email), new string[] { ValidEmailAddress.ValidationRequirements } },
-                        { nameof(createUserRequest.Password), new string[] { ValidPassword.ValidationRequirements } },
+                        { nameof(createUserRequest.Email), new string[] { "Invalid email. Email must have a recipient and domain and contain @ sign.", } },
+                        { nameof(createUserRequest.Password), new string[] { "Invalid password. Password length must be at least 8 characters.", } },
                     })
                 {
                     Status = 400,
@@ -370,7 +370,7 @@ internal sealed class UserEndpointsV1Tests
                 ProblemDetails = new HttpValidationProblemDetails(
                     new Dictionary<string, string[]>
                     {
-                        { nameof(createUserRequest.Password), new string[] { ValidPassword.ValidationRequirements } },
+                        { nameof(createUserRequest.Password), new string[] { "Invalid password. Password length must be at least 8 characters.", } },
                     })
                 {
                     Status = 400,
@@ -399,7 +399,7 @@ internal sealed class UserEndpointsV1Tests
                 ProblemDetails = new HttpValidationProblemDetails(
                     new Dictionary<string, string[]>
                     {
-                        { nameof(createUserRequest.Email), new string[] { ValidEmailAddress.ValidationRequirements } },
+                        { nameof(createUserRequest.Email), new string[] { "Invalid email. Email must have a recipient and domain and contain @ sign.", } },
                     })
                 {
                     Status = 400,

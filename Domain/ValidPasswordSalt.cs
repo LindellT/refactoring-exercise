@@ -1,4 +1,6 @@
-﻿namespace Domain;
+﻿using OneOf;
+
+namespace Domain;
 
 public sealed record ValidPasswordSalt
 {
@@ -9,13 +11,11 @@ public sealed record ValidPasswordSalt
 
     public string Salt { get; init; }
 
-    public const string ValidationRequirements = "Invalid salt. Salt length must be at least 32 characters.";
-
-    public static ValidPasswordSalt? CreateFrom(string salt)
+    public static OneOf<ValidPasswordSalt, PasswordSaltValidationError> CreateFrom(string salt)
     {
         if (salt.Length < 32)
         {
-            return null;
+            return new PasswordSaltValidationError();
         }
 
         return new ValidPasswordSalt(salt);

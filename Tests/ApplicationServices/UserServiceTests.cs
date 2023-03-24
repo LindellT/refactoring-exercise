@@ -12,9 +12,9 @@ internal sealed class UserServiceTests
     {
         // Arrange
         var userRepository = Substitute.For<IUserRepository>();
-        var email = ValidEmailAddress.CreateFrom("bill@microsoft.com")!;
-        var password = ValidPassword.CreateFrom("password123")!;
-        var passwordSalt = ValidPasswordSalt.CreateFrom("12345678901235467890123456789012")!;
+        var email = ValidEmailAddress.CreateFrom("bill@microsoft.com").Match<ValidEmailAddress?>(validEmailAddress => validEmailAddress, emailValidationError => null)!;
+        var password = ValidPassword.CreateFrom("password123").Match<ValidPassword?>(validPassword => validPassword, passwordValidationError => null)!;
+        var passwordSalt = ValidPasswordSalt.CreateFrom("12345678901235467890123456789012").Match<ValidPasswordSalt?>(validPasswordSalt => validPasswordSalt, passwordSaltValidationError => null)!;
         var userFromRepo = new User(1, email, HashedPassword.CreateFrom(password, passwordSalt));
         userRepository.FindUserByEmailAsync(default!, default).ReturnsForAnyArgs(Task.FromResult<OneOf<User, NotFound>>(userFromRepo));
         var command = new CreateUserCommand(email, password);
@@ -33,8 +33,8 @@ internal sealed class UserServiceTests
     {
         // Arrange
         var userRepository = Substitute.For<IUserRepository>();
-        var email = ValidEmailAddress.CreateFrom("bill@microsoft.com")!;
-        var password = ValidPassword.CreateFrom("password123")!;
+        var email = ValidEmailAddress.CreateFrom("bill@microsoft.com").Match<ValidEmailAddress?>(validEmailAddress => validEmailAddress, emailValidationError => null)!;
+        var password = ValidPassword.CreateFrom("password123").Match<ValidPassword?>(validPassword => validPassword, passwordValidationError => null)!;
         userRepository.FindUserByEmailAsync(default!, default).ReturnsForAnyArgs(Task.FromResult<OneOf<User, NotFound>>(new NotFound()));
         userRepository.CreateUserAsync(default!, default!, default).ReturnsForAnyArgs(
             Task.FromResult<OneOf<Success<int>, UserCreationFailedError>>(new UserCreationFailedError()));
@@ -54,9 +54,9 @@ internal sealed class UserServiceTests
     {
         // Arrange
         var userRepository = Substitute.For<IUserRepository>();
-        var email = ValidEmailAddress.CreateFrom("bill@microsoft.com")!;
-        var password = ValidPassword.CreateFrom("password123")!;
-        var passwordSalt = ValidPasswordSalt.CreateFrom("12345678901235467890123456789012")!;
+        var email = ValidEmailAddress.CreateFrom("bill@microsoft.com").Match<ValidEmailAddress?>(validEmailAddress => validEmailAddress, emailValidationError => null)!;
+        var password = ValidPassword.CreateFrom("password123").Match<ValidPassword?>(validPassword => validPassword, passwordValidationError => null)!;
+        var passwordSalt = ValidPasswordSalt.CreateFrom("12345678901235467890123456789012").Match<ValidPasswordSalt?>(validPasswordSalt => validPasswordSalt, passwordSaltValidationError => null)!;
         var userPersisted = new User(1, email, HashedPassword.CreateFrom(password, passwordSalt));
         userRepository.FindUserByEmailAsync(default!, default).ReturnsForAnyArgs(Task.FromResult<OneOf<User, NotFound>>(new NotFound()));
         userRepository.CreateUserAsync(default!, default!, default).ReturnsForAnyArgs(
@@ -142,9 +142,9 @@ internal sealed class UserServiceTests
         // Arrange
         var userRepository = Substitute.For<IUserRepository>();
         var emailAddress = "bill@microsoft.com";
-        var email = ValidEmailAddress.CreateFrom(emailAddress)!;
-        var password = ValidPassword.CreateFrom("password123")!;
-        var passwordSalt = ValidPasswordSalt.CreateFrom("12345678901235467890123456789012")!;
+        var email = ValidEmailAddress.CreateFrom(emailAddress).Match<ValidEmailAddress?>(validEmailAddress => validEmailAddress, emailValidationError => null)!;
+        var password = ValidPassword.CreateFrom("password123").Match<ValidPassword?>(validPassword => validPassword, passwordValidationError => null)!;
+        var passwordSalt = ValidPasswordSalt.CreateFrom("12345678901235467890123456789012").Match<ValidPasswordSalt?>(validPasswordSalt => validPasswordSalt, passwordSaltValidationError => null)!;
         var user = new User(1, email, HashedPassword.CreateFrom(password, passwordSalt));
         userRepository.FindUserAsync(default, default).ReturnsForAnyArgs(Task.FromResult<OneOf<User, NotFound>>(user));
 
@@ -163,8 +163,8 @@ internal sealed class UserServiceTests
         // Arrange
         var userRepository = Substitute.For<IUserRepository>();
         var emailAddress = "bill@microsoft.com";
-        var email = ValidEmailAddress.CreateFrom(emailAddress)!;
-        var password = ValidPassword.CreateFrom("password123")!;
+        var email = ValidEmailAddress.CreateFrom(emailAddress).Match<ValidEmailAddress?>(validEmailAddress => validEmailAddress, emailValidationError => null);
+        var password = ValidPassword.CreateFrom("password123").Match<ValidPassword?>(validPassword => validPassword, passwordValidationError => null)!;
         var updateUserCommand = UpdateUserCommand.CreateFrom(1, email, password).Match<UpdateUserCommand?>(command => command, err => null)!;
         userRepository.FindUserAsync(default!, default).ReturnsForAnyArgs(Task.FromResult<OneOf<User, NotFound>>(new NotFound()));
 
@@ -183,9 +183,9 @@ internal sealed class UserServiceTests
         // Arrange
         var userRepository = Substitute.For<IUserRepository>();
         var emailAddress = "bill@microsoft.com";
-        var email = ValidEmailAddress.CreateFrom(emailAddress)!;
-        var password = ValidPassword.CreateFrom("password123")!;
-        var passwordSalt = ValidPasswordSalt.CreateFrom("12345678901235467890123456789012")!;
+        var email = ValidEmailAddress.CreateFrom(emailAddress).Match<ValidEmailAddress?>(validEmailAddress => validEmailAddress, emailValidationError => null)!;
+        var password = ValidPassword.CreateFrom("password123").Match<ValidPassword?>(validPassword => validPassword, passwordValidationError => null)!;
+        var passwordSalt = ValidPasswordSalt.CreateFrom("12345678901235467890123456789012").Match<ValidPasswordSalt?>(validPasswordSalt => validPasswordSalt, passwordSaltValidationError => null)!;
         var userFoundWithId = new User(1, email, HashedPassword.CreateFrom(password, passwordSalt));
         var userFoundWithEmail = new User(2, email, HashedPassword.CreateFrom(password, passwordSalt));
         userRepository.FindUserAsync(default, default).ReturnsForAnyArgs(Task.FromResult<OneOf<User, NotFound>>(userFoundWithId));
@@ -207,9 +207,9 @@ internal sealed class UserServiceTests
         // Arrange
         var userRepository = Substitute.For<IUserRepository>();
         var emailAddress = "bill@microsoft.com";
-        var email = ValidEmailAddress.CreateFrom(emailAddress)!;
-        var password = ValidPassword.CreateFrom("password123")!;
-        var passwordSalt = ValidPasswordSalt.CreateFrom("12345678901235467890123456789012")!;
+        var email = ValidEmailAddress.CreateFrom(emailAddress).Match<ValidEmailAddress?>(validEmailAddress => validEmailAddress, emailValidationError => null)!;
+        var password = ValidPassword.CreateFrom("password123").Match<ValidPassword?>(validPassword => validPassword, passwordValidationError => null)!;
+        var passwordSalt = ValidPasswordSalt.CreateFrom("12345678901235467890123456789012").Match<ValidPasswordSalt?>(validPasswordSalt => validPasswordSalt, passwordSaltValidationError => null)!;
         var userFoundWithId = new User(1, email, HashedPassword.CreateFrom(password, passwordSalt));
         var userFoundWithEmail = new User(1, email, HashedPassword.CreateFrom(password, passwordSalt));
         userRepository.FindUserAsync(default, default).ReturnsForAnyArgs(Task.FromResult<OneOf<User, NotFound>>(userFoundWithId));
@@ -232,9 +232,9 @@ internal sealed class UserServiceTests
         // Arrange
         var userRepository = Substitute.For<IUserRepository>();
         var emailAddress = "bill@microsoft.com";
-        var email = ValidEmailAddress.CreateFrom(emailAddress)!;
-        var password = ValidPassword.CreateFrom("password123")!;
-        var passwordSalt = ValidPasswordSalt.CreateFrom("12345678901235467890123456789012")!;
+        var email = ValidEmailAddress.CreateFrom(emailAddress).Match<ValidEmailAddress?>(validEmailAddress => validEmailAddress, emailValidationError => null)!;
+        var password = ValidPassword.CreateFrom("password123").Match<ValidPassword?>(validPassword => validPassword, passwordValidationError => null)!;
+        var passwordSalt = ValidPasswordSalt.CreateFrom("12345678901235467890123456789012").Match<ValidPasswordSalt?>(validPasswordSalt => validPasswordSalt, passwordSaltValidationError => null)!;
         var userFoundWithId = new User(1, email, HashedPassword.CreateFrom(password, passwordSalt));
         var userFoundWithEmail = new User(1, email, HashedPassword.CreateFrom(password, passwordSalt));
         userRepository.FindUserAsync(default, default).ReturnsForAnyArgs(Task.FromResult<OneOf<User, NotFound>>(userFoundWithId));

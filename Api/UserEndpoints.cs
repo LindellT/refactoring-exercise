@@ -1,8 +1,6 @@
 ﻿using ApplicationServices;
 using Domain;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using System.Threading;
 
 namespace Api;
 
@@ -50,7 +48,16 @@ internal static class UserEndpointsV1
                 error => TypedResults.BadRequest(error.Message));
 
     internal static async Task<IResult> UpdateUserAsync([FromServices] IUserService userService, int id, [FromBody] UpdateUserRequest request, CancellationToken cancellationToken)
-        => await UpdateUserCommand.CreateFrom(id, ValidEmailAddress.CreateFrom(request.Email), ValidPassword.CreateFrom(request.Password))
+        => await UpdateUserCommand.CreateFrom(
+            id, 
+            ValidEmailAddress.CreateFrom(request.Email)
+                .Match<ValidEmailAddress?>(
+                    validEmailAddress => validEmailAddress,
+                    emailValidationError => null),
+            ValidPassword.CreateFrom(request.Password)
+                .Match<ValidPassword?>(
+                    validPassword => validPassword,
+                    passwordValidationError => null))
             .Match<Task<IResult>>(
                 async updateUserCommand => await ExecuteUpdateUserCommand(userService, updateUserCommand, cancellationToken),
                 updateUserCommandValidationError => Task.FromResult<IResult>(TypedResults.BadRequest(updateUserCommandValidationError!.Message)));
@@ -59,28 +66,25 @@ internal static class UserEndpointsV1
     {
         var validationProblems = new List<(string field, string description)>();
 
-        var email = ValidEmailAddress.CreateFrom(request.Email);
-        var password = ValidPassword.CreateFrom(request.Password);
+        ValidEmailAddress? email = null;
+        ValidEmailAddress.CreateFrom(request.Email)
+            .Switch(
+                validEmailAddress => email = validEmailAddress,
+                emailValidationError => validationProblems.Add((nameof(request.Email), emailValidationError.Message)));
 
-        if (email is null)
-        {
-            validationProblems.Add((nameof(request.Email), ValidEmailAddress.ValidationRequirements));
-        }
-        if (password is null)
-        {
-            validationProblems.Add((nameof(request.Password), ValidPassword.ValidationRequirements));
-        }
+        ValidPassword? password = null;
+        ValidPassword.CreateFrom(request.Password)
+            .Switch(
+                validPassword => password = validPassword,
+                passwordValidationError => validationProblems.Add((nameof(request.Password), passwordValidationError.Message)));
 
-        if (validationProblems.Any())
-        {
-            return CreateValidationProblemResult(validationProblems);
-        }
-
-        return (await userService.CreateUserAsync(new(email!, password!), cancellationToken))
-            .Match<IResult>(
-                success => TypedResults.CreatedAtRoute(nameof(GetUserByIdAsync), new { id = success.Value }),
-                emailReserved => TypedResults.BadRequest(emailReserved.Message),
-                userCreationFailed => TypedResults.BadRequest(userCreationFailed.Message));
+        return validationProblems.Any()
+            ? CreateValidationProblemResult(validationProblems) 
+            : (await userService.CreateUserAsync(new(email!, password!), cancellationToken))
+                .Match<IResult>(
+                    success => TypedResults.CreatedAtRoute(nameof(GetUserByIdAsync), new { id = success.Value }),
+                    emailReserved => TypedResults.BadRequest(emailReserved.Message),
+                    userCreationFailed => TypedResults.BadRequest(userCreationFailed.Message));
     }
 
     private static async Task<IResult> ExecuteUpdateUserCommand(IUserService userService, UpdateUserCommand updateUserCommand, CancellationToken cancellationToken)

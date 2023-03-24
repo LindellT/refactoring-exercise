@@ -10,8 +10,8 @@ internal sealed class UpdateUserCommandTests
     {
         // Arrange
         var userId = 1;
-        var email = ValidEmailAddress.CreateFrom(null);
-        var password = ValidPassword.CreateFrom(null);
+        var email = ValidEmailAddress.CreateFrom(null).Match<ValidEmailAddress?>(validEmailAddress => validEmailAddress, emailValidationError => null);
+        var password = ValidPassword.CreateFrom(null).Match<ValidPassword?>(validPassword => validPassword, passwordValidationError => null);
 
         // Act
         var result = UpdateUserCommand.CreateFrom(userId, email, password).Match<UpdateUserCommandValidationError?>(updateUserCommand => null, updateUserCommandValidationError => updateUserCommandValidationError);
@@ -28,8 +28,8 @@ internal sealed class UpdateUserCommandTests
     {
         // Arrange
         var userId = 1;
-        var validEmail = ValidEmailAddress.CreateFrom(email);
-        var validPassword = ValidPassword.CreateFrom(password);
+        var validEmail = ValidEmailAddress.CreateFrom(email).Match<ValidEmailAddress?>(validEmailAddress => validEmailAddress, emailValidationError => null);
+        var validPassword = ValidPassword.CreateFrom(password).Match<ValidPassword?>(validPassword => validPassword, passwordValidationError => null);
 
         // Act
         var result = UpdateUserCommand.CreateFrom(userId, validEmail, validPassword).Match<UpdateUserCommand?>(updateUserCommand => updateUserCommand, updateUserCommandValidationError => null);

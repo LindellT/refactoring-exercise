@@ -1,4 +1,6 @@
-﻿namespace Domain;
+﻿using OneOf;
+
+namespace Domain;
 
 public sealed record ValidPassword
 {
@@ -9,13 +11,11 @@ public sealed record ValidPassword
 
     public string Password { get; init; }
 
-    public const string ValidationRequirements = "Invalid password. Password length must be at least 8 characters.";
-
-    public static ValidPassword? CreateFrom(string? password)
+    public static OneOf<ValidPassword, PasswordValidationError> CreateFrom(string? password)
     {
         if (password is null || password.Length < 8)
         {
-            return null;
+            return new PasswordValidationError();
         }
 
         return new ValidPassword(password);

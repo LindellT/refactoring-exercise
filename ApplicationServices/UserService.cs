@@ -12,7 +12,7 @@ internal sealed class UserService : IUserService
     public UserService(IUserRepository userRepository)
     {
         _userRepository = userRepository;
-        _validPasswordSalt = ValidPasswordSalt.CreateFrom("12345678901234567890123465789012")!;
+        _validPasswordSalt = ValidPasswordSalt.CreateFrom("12345678901234567890123465789012").Match(validPasswordSalt => validPasswordSalt, passwordSaltValidationError => throw passwordSaltValidationError);
     }
 
     public async Task<OneOf<Success<int>, EmailReservedError, UserCreationFailedError>> CreateUserAsync(CreateUserCommand command, CancellationToken cancellationToken)
