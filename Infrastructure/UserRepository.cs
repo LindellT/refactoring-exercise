@@ -1,6 +1,8 @@
 ﻿namespace Infrastructure;
 
+#pragma warning disable CA1812 // Avoid uninstantiated internal classes, added to dependency injection with RegisterInfrastructure
 internal sealed class UserRepository(UserContext userContext) : IUserRepository
+#pragma warning restore CA1812 // Avoid uninstantiated internal classes
 {
     private readonly UserContext _userContext = userContext;
 
