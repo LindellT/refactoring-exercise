@@ -1,6 +1,4 @@
-﻿using OneOf;
-
-namespace Domain;
+﻿namespace Domain;
 
 public sealed record ValidEmailAddress
 {

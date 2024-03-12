@@ -1,6 +1,4 @@
-﻿using Domain;
-
-namespace Tests.Domain;
+﻿namespace Tests.Domain;
 
 internal sealed class ValidPasswordTests
 {

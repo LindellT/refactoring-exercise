@@ -1,7 +1,4 @@
-﻿using OneOf.Types;
-using OneOf;
-
-namespace ApplicationServices;
+﻿namespace ApplicationServices;
 
 public interface IUserService
 {

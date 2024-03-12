@@ -1,6 +1,4 @@
-﻿using Domain;
-
-namespace Infrastructure;
+﻿namespace Infrastructure;
 
 internal sealed class UserEntity
 { 

@@ -1,6 +1,4 @@
-﻿using Domain;
-
-namespace ApplicationServices;
+﻿namespace ApplicationServices;
 
 public sealed record UserDTO(int Id, string Email)
 {

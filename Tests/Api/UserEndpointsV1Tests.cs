@@ -3,8 +3,6 @@ using ApplicationServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Routing;
-using OneOf;
-using OneOf.Types;
 
 namespace Tests.Api;
 

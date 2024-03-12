@@ -1,10 +1,4 @@
-﻿using ApplicationServices;
-using Domain;
-using Microsoft.EntityFrameworkCore;
-using OneOf;
-using OneOf.Types;
-
-namespace Infrastructure;
+﻿namespace Infrastructure;
 
 internal sealed class UserRepository(UserContext userContext) : IUserRepository
 {

@@ -1,5 +1,3 @@
-﻿using Domain;
-
-namespace ApplicationServices;
+﻿namespace ApplicationServices;
 
 public sealed record CreateUserCommand(ValidEmailAddress EmailAddress, ValidPassword Password);

@@ -1,8 +1,4 @@
-﻿using Domain;
-using OneOf;
-using OneOf.Types;
-
-namespace ApplicationServices;
+﻿namespace ApplicationServices;
 
 internal sealed class UserService(IUserRepository userRepository) : IUserService
 {

@@ -1,7 +1,4 @@
-﻿using Domain;
-using OneOf;
-
-namespace ApplicationServices;
+﻿namespace ApplicationServices;
 
 public sealed record UpdateUserCommand
 {

@@ -1,7 +1,4 @@
-﻿using Domain;
-using Microsoft.EntityFrameworkCore;
-
-namespace Infrastructure;
+﻿namespace Infrastructure;
 
 internal sealed class UserContext(DbContextOptions options) : DbContext(options)
 {
