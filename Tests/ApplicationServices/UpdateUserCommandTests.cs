@@ -2,9 +2,9 @@
 
 namespace Tests.ApplicationServices;
 
-internal sealed class UpdateUserCommandTests
+public sealed class UpdateUserCommandTests
 {
-    [Test]
+    [Fact]
     public void GivenSmartConstructerIsCalled_WhenParametersAreNotValid_ThenReturnsCorrectly()
     {
         // Arrange
@@ -19,10 +19,10 @@ internal sealed class UpdateUserCommandTests
         result.Should().NotBeNull().And.BeOfType<UpdateUserCommandValidationError>();
     }
 
-    [Test]
-    [TestCase("bill@microsoft.com", "password123")]
-    [TestCase("bill@microsoft.com", null)]
-    [TestCase(null, "password123")]
+    [Theory]
+    [InlineData("bill@microsoft.com", "password123")]
+    [InlineData("bill@microsoft.com", null)]
+    [InlineData(null, "password123")]
     public void GivenSmartConstructerIsCalled_WhenParametersAreValid_ThenReturnsCorrectly(string? email, string? password)
     {
         // Arrange

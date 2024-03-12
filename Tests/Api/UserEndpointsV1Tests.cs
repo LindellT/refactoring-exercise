@@ -6,13 +6,13 @@ using Microsoft.AspNetCore.Routing;
 
 namespace Tests.Api;
 
-internal sealed class UserEndpointsV1Tests
+public sealed class UserEndpointsV1Tests
 {
     private const string ValidationProblemType = "https://tools.ietf.org/html/rfc9110#section-15.5.1";
     internal static readonly string[] EmailValidationErrorMessage = ["Invalid email. Email must have a recipient and domain and contain @ sign.",];
     internal static readonly string[] PasswordValidationErrorMessage = ["Invalid password. Password length must be at least 8 characters.",];
 
-    [Test]
+    [Fact]
     public async Task GivenGetUserIsCalled_WhenUserDoesNotExists_ThenReturnsCorrectly()
     {
         // Arrange
@@ -28,7 +28,7 @@ internal sealed class UserEndpointsV1Tests
         result.Should().NotBeNull().And.BeOfType<Microsoft.AspNetCore.Http.HttpResults.NotFound>().Which.StatusCode.Should().Be(404);
     }
 
-    [Test]
+    [Fact]
     public async Task GivenGetUserIsCalled_WhenUserExists_ThenReturnsCorrectly()
     {
         // Arrange        
@@ -50,7 +50,7 @@ internal sealed class UserEndpointsV1Tests
             });
     }
 
-    [Test]
+    [Fact]
     public async Task GivenGetUsersIsCalled_WhenThereAreUsers_ThenReturnsCorrectly()
     {
         // Arrange
@@ -72,7 +72,7 @@ internal sealed class UserEndpointsV1Tests
             });
     }
 
-    [Test]
+    [Fact]
     public async Task GivenGetUsersIsCalled_WhenTherAreNoUsers_ThenReturnsCorrectly()
     {
         // Arrange        
@@ -94,7 +94,7 @@ internal sealed class UserEndpointsV1Tests
             });
     }
 
-    [Test]
+    [Fact]
     public async Task GivenDeleteUserIsCalled_WhenDeleteFails_ThenReturnsCorrectly()
     {
         // Arrange
@@ -116,7 +116,7 @@ internal sealed class UserEndpointsV1Tests
             });
     }
 
-    [Test]
+    [Fact]
     public async Task GivenDeleteUserIsCalled_WhenUserIsNotFound_ThenReturnsCorrectly()
     {
         // Arrange
@@ -133,7 +133,7 @@ internal sealed class UserEndpointsV1Tests
         result.Should().NotBeNull().And.BeOfType<Microsoft.AspNetCore.Http.HttpResults.NotFound>().Which.StatusCode.Should().Be(404);
     }
 
-    [Test]
+    [Fact]
     public async Task GivenDeleteUserIsCalled_WhenDeleteSucceeds_ThenReturnsCorrectly()
     {
         // Arrange
@@ -150,7 +150,7 @@ internal sealed class UserEndpointsV1Tests
         result.Should().NotBeNull().And.BeOfType<Ok>().Which.StatusCode.Should().Be(200);
     }
 
-    [Test]
+    [Fact]
     public async Task GivenUpdateUserIsCalled_WhenUpdateFails_ThenReturnsCorrectly()
     {
         // Arrange        
@@ -172,7 +172,7 @@ internal sealed class UserEndpointsV1Tests
             });
     }
 
-    [Test]
+    [Fact]
     public async Task GivenUpdateUserIsCalled_WhenEmailIsReserved_ThenReturnsCorrectly()
     {
         // Arrange        
@@ -194,7 +194,7 @@ internal sealed class UserEndpointsV1Tests
             });
     }
 
-    [Test]
+    [Fact]
     public async Task GivenUpdateUserIsCalled_WhenUserIsNotFound_ThenReturnsCorrectly()
     {
         // Arrange        
@@ -211,7 +211,7 @@ internal sealed class UserEndpointsV1Tests
         result.Should().NotBeNull().And.BeOfType<Microsoft.AspNetCore.Http.HttpResults.NotFound>().Which.StatusCode.Should().Be(404);
     }
 
-    [Test]
+    [Fact]
     public async Task GivenUpdateUserIsCalled_WhenParametersAreInvalid_ThenReturnsCorrectly()
     {
         // Arrange        
@@ -233,10 +233,10 @@ internal sealed class UserEndpointsV1Tests
             });
     }
 
-    [Test]
-    [TestCase("bill@microsoft.com", "password123")]
-    [TestCase("bill@microsoft.com", null)]
-    [TestCase(null, "password123")]
+    [Theory]
+    [InlineData("bill@microsoft.com", "password123")]
+    [InlineData("bill@microsoft.com", null)]
+    [InlineData(null, "password123")]
     public async Task GivenUpdateUserIsCalled_WhenParametersAreValid_ThenReturnsCorrectly(string? email, string? password)
     {
         // Arrange        
@@ -253,7 +253,7 @@ internal sealed class UserEndpointsV1Tests
         result.Should().NotBeNull().And.BeOfType<Ok>().Which.StatusCode.Should().Be(200);
     }
 
-    [Test]
+    [Fact]
     public async Task GivenCreateUserIsCalled_WhenCreationFails_ThenReturnsCorrectly()
     {
         // Arrange
@@ -275,7 +275,7 @@ internal sealed class UserEndpointsV1Tests
             });
     }
 
-    [Test]
+    [Fact]
     public async Task GivenCreateUserIsCalled_WhenEmailIsReserved_ThenReturnsCorrectly()
     {
         // Arrange
@@ -297,7 +297,7 @@ internal sealed class UserEndpointsV1Tests
             });
     }
 
-    [Test]
+    [Fact]
     public async Task GivenCreateUserIsCalled_WhenCreationSucceeds_ThenReturnsCorrectly()
     {
         // Arrange        
@@ -321,7 +321,7 @@ internal sealed class UserEndpointsV1Tests
             });
     }
 
-    [Test]
+    [Fact]
     public async Task GivenCreateUserIsCalled_WhenEmailAndPasswordAreInvalid_ThenReturnsCorrectly()
     {
         // Arrange        
@@ -351,7 +351,7 @@ internal sealed class UserEndpointsV1Tests
             });
     }
 
-    [Test]
+    [Fact]
     public async Task GivenCreateUserIsCalled_WhenPasswordIsInvalid_ThenReturnsCorrectly()
     {
         // Arrange        
@@ -380,7 +380,7 @@ internal sealed class UserEndpointsV1Tests
             });
     }
 
-    [Test]
+    [Fact]
     public async Task GivenCreateUserIsCalled_WhenEmailIsInvalid_ThenReturnsCorrectly()
     {
         // Arrange        

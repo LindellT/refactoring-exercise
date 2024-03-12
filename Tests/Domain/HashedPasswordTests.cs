@@ -1,8 +1,8 @@
 ﻿namespace Tests.Domain;
 
-internal sealed class HashedPasswordTests
+public sealed class HashedPasswordTests
 {
-    [Test]
+    [Fact]
     public void GivenSmartConstructerIsCalled_WhenParametersAreValid_ThenReturnsHash()
     {
         // Arrange

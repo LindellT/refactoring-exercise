@@ -1,8 +1,8 @@
 ﻿namespace Tests.Domain;
 
-internal sealed class ValidPasswordSaltTests
+public sealed class ValidPasswordSaltTests
 {
-    [Test]
+    [Fact]
     public void GivenSmartConstructerIsCalled_WhenParametersAreNotValid_ThenReturnsCorrectly()
     {
         // Arrange
@@ -15,7 +15,7 @@ internal sealed class ValidPasswordSaltTests
         result.Should().NotBeNull().And.BeOfType<PasswordSaltValidationError>();
     }
 
-    [Test]
+    [Fact]
     public void GivenSmartConstructerIsCalled_WhenParametersAreValid_ThenReturnsCorrectly()
     {
         // Arrange

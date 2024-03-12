@@ -1,10 +1,10 @@
 ﻿namespace Tests.Domain;
 
-internal sealed class ValidPasswordTests
+public sealed class ValidPasswordTests
 {
-    [Test]
-    [TestCase("1234567")]
-    [TestCase(null)]
+    [Theory]
+    [InlineData("1234567")]
+    [InlineData(null)]
     public void GivenSmartConstructerIsCalled_WhenParametersAreNotValid_ThenReturnsCorrectly(string? password)
     {
         // Arrange
@@ -16,7 +16,7 @@ internal sealed class ValidPasswordTests
         result.Should().NotBeNull().And.BeOfType<PasswordValidationError>();
     }
 
-    [Test]
+    [Fact]
     public void GivenSmartConstructerIsCalled_WhenParametersAreValid_ThenReturnsCorrectly()
     {
         // Arrange

@@ -1,14 +1,14 @@
 ﻿namespace Tests.Domain;
 
-internal sealed class ValidEmailAddressTests
+public sealed class ValidEmailAddressTests
 {
-    [Test]
-    [TestCase("bill£microsoft.com")]
-    [TestCase("@microsoft.com")]
-    [TestCase("bill@")]
-    [TestCase("bill@ ")]
-    [TestCase(" @microsoft.com")]
-    [TestCase(null)]
+    [Theory]
+    [InlineData("bill£microsoft.com")]
+    [InlineData("@microsoft.com")]
+    [InlineData("bill@")]
+    [InlineData("bill@ ")]
+    [InlineData(" @microsoft.com")]
+    [InlineData(null)]
     public void GivenSmartConstructerIsCalled_WhenParametersAreNotValid_ThenReturnsCorrectly(string? email)
     {
         // Arrange
@@ -20,7 +20,7 @@ internal sealed class ValidEmailAddressTests
         result.Should().NotBeNull().And.BeOfType<EmailValidationError>();
     }
 
-    [Test]
+    [Fact]
     public void GivenSmartConstructerIsCalled_WhenParametersAreValid_ThenReturnsCorrectly()
     {
         // Arrange

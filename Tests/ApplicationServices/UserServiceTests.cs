@@ -2,9 +2,9 @@
 
 namespace Tests.ApplicationServices;
 
-internal sealed class UserServiceTests
+public sealed class UserServiceTests
 {
-    [Test]
+    [Fact]
     public async Task GivenCreateUserIsCalled_WhenEmailIsReserved_ThenReturnsCorrectly()
     {
         // Arrange
@@ -25,7 +25,7 @@ internal sealed class UserServiceTests
         result.Should().NotBeNull().And.BeOfType<EmailReservedError>();
     }
 
-    [Test]
+    [Fact]
     public async Task GivenCreateUserIsCalled_WhenPersistingUserFails_ThenReturnsCorrectly()
     {
         // Arrange
@@ -46,7 +46,7 @@ internal sealed class UserServiceTests
         result.Should().NotBeNull().And.BeOfType<UserCreationFailedError>();
     }
 
-    [Test]
+    [Fact]
     public async Task GivenCreateUserIsCalled_WhenUserIsCreatedSuccessfully_ThenReturnsCorrectly()
     {
         // Arrange
@@ -69,7 +69,7 @@ internal sealed class UserServiceTests
         result.Should().BeOfType<Success<int>>().Which.Value.Should().Be(1);
     }
 
-    [Test]
+    [Fact]
     public async Task GivenDeleteUserIsCalled_WhenUserIsNotFound_ThenReturnsCorrectly()
     {
         // Arrange
@@ -85,7 +85,7 @@ internal sealed class UserServiceTests
         result.Should().NotBeNull().And.BeOfType<NotFound>();
     }
 
-    [Test]
+    [Fact]
     public async Task GivenDeleteUserIsCalled_WhenUserDeletionFails_ThenReturnsCorrectly()
     {
         // Arrange
@@ -101,7 +101,7 @@ internal sealed class UserServiceTests
         result.Should().NotBeNull().And.BeOfType<UserDeletionFailedError>();
     }
 
-    [Test]
+    [Fact]
     public async Task GivenDeleteUserIsCalled_WhenUserDeletionSucceeds_ThenReturnsCorrectly()
     {
         // Arrange
@@ -117,7 +117,7 @@ internal sealed class UserServiceTests
         result.Should().NotBeNull().And.BeOfType<Success>();
     }
 
-    [Test]
+    [Fact]
     public async Task GivenFindUserIsCalled_WhenUserIsNotFound_ThenReturnsCorrectly()
     {
         // Arrange
@@ -133,7 +133,7 @@ internal sealed class UserServiceTests
         result.Should().NotBeNull().And.BeOfType<NotFound>();
     }
 
-    [Test]
+    [Fact]
     public async Task GivenFindUserIsCalled_WhenUserIsFound_ThenReturnsCorrectly()
     {
         // Arrange
@@ -154,7 +154,7 @@ internal sealed class UserServiceTests
         result.Should().NotBeNull().And.BeOfType<UserDTO>().And.BeEquivalentTo(new UserDTO(1, emailAddress));
     }
 
-    [Test]
+    [Fact]
     public async Task GivenUpdateUserIsCalled_WhenUserIsNotFound_ThenReturnsCorrectly()
     {
         // Arrange
@@ -174,7 +174,7 @@ internal sealed class UserServiceTests
         result.Should().NotBeNull().And.BeOfType<NotFound>();
     }
 
-    [Test]
+    [Fact]
     public async Task GivenUpdateUserIsCalled_WhenEmailIsReserved_ThenReturnsCorrectly()
     {
         // Arrange
@@ -198,7 +198,7 @@ internal sealed class UserServiceTests
         result.Should().NotBeNull().And.BeOfType<EmailReservedError>();
     }
 
-    [Test]
+    [Fact]
     public async Task GivenUpdateUserIsCalled_WhenUpdateFails_ThenReturnsCorrectly()
     {
         // Arrange
@@ -223,7 +223,7 @@ internal sealed class UserServiceTests
         result.Should().NotBeNull().And.BeOfType<UserUpdateFailedError>();
     }
 
-    [Test]
+    [Fact]
     public async Task GivenUpdateUserIsCalled_WhenUpdateSucceeds_ThenReturnsCorrectly()
     {
         // Arrange
