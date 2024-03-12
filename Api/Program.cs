@@ -29,4 +29,4 @@ app.UseHttpsRedirection();
 
 app.MapGroup("/v1/user").MapUsersApiV1().WithTags("UserEndpoints");
 
-app.Run();
+await app.RunAsync();

@@ -4,16 +4,11 @@ using OneOf.Types;
 
 namespace ApplicationServices;
 
-internal sealed class UserService : IUserService
+internal sealed class UserService(IUserRepository userRepository) : IUserService
 {
-    private readonly IUserRepository _userRepository;
-    private readonly ValidPasswordSalt _validPasswordSalt;
-
-    public UserService(IUserRepository userRepository)
-    {
-        _userRepository = userRepository;
-        _validPasswordSalt = ValidPasswordSalt.CreateFrom("12345678901234567890123465789012").Match(validPasswordSalt => validPasswordSalt, passwordSaltValidationError => throw passwordSaltValidationError);
-    }
+    private readonly IUserRepository _userRepository = userRepository;
+    private readonly ValidPasswordSalt _validPasswordSalt = ValidPasswordSalt.CreateFrom("12345678901234567890123465789012")
+        .Match(validPasswordSalt => validPasswordSalt, passwordSaltValidationError => throw passwordSaltValidationError);
 
     public async Task<OneOf<Success<int>, EmailReservedError, UserCreationFailedError>> CreateUserAsync(CreateUserCommand command, CancellationToken cancellationToken)
     {

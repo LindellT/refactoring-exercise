@@ -11,6 +11,8 @@ namespace Tests.Api;
 internal sealed class UserEndpointsV1Tests
 {
     private const string ValidationProblemType = "https://tools.ietf.org/html/rfc9110#section-15.5.1";
+    internal static readonly string[] EmailValidationErrorMessage = ["Invalid email. Email must have a recipient and domain and contain @ sign.",];
+    internal static readonly string[] PasswordValidationErrorMessage = ["Invalid password. Password length must be at least 8 characters.",];
 
     [Test]
     public async Task GivenGetUserIsCalled_WhenUserDoesNotExists_ThenReturnsCorrectly()
@@ -19,10 +21,10 @@ internal sealed class UserEndpointsV1Tests
         var userService = Substitute.For<IUserService>();
         userService.FindUserAsync(default, default).Returns(Task.FromResult<OneOf<UserDTO, OneOf.Types.NotFound>>(new OneOf.Types.NotFound()));
 
-        var sut = () => UserEndpointsV1.GetUserByIdAsync(userService, default);
+        Task<IResult> sut() => UserEndpointsV1.GetUserByIdAsync(userService, default);
 
         // Act
-        var result = await sut.Invoke();
+        var result = await sut();
 
         // Assert
         result.Should().NotBeNull().And.BeOfType<Microsoft.AspNetCore.Http.HttpResults.NotFound>().Which.StatusCode.Should().Be(404);
@@ -36,10 +38,10 @@ internal sealed class UserEndpointsV1Tests
         var userService = Substitute.For<IUserService>();
         userService.FindUserAsync(default, default).ReturnsForAnyArgs(user);
 
-        var sut = () => UserEndpointsV1.GetUserByIdAsync(userService, default);
+        Task<IResult> sut() => UserEndpointsV1.GetUserByIdAsync(userService, default);
 
         // Act
-        var result = await sut.Invoke();
+        var result = await sut();
 
         // Assert
         result.Should().NotBeNull().And.BeOfType<Ok<UserDTO>>().Which.Should().BeEquivalentTo(
@@ -58,10 +60,10 @@ internal sealed class UserEndpointsV1Tests
         var userService = Substitute.For<IUserService>();
         userService.ListUsersAsync(default).Returns(users);
 
-        var sut = () => UserEndpointsV1.GetUsersAsync(userService, default);
+        Task<IResult> sut() => UserEndpointsV1.GetUsersAsync(userService, default);
 
         // Act
-        var result = await sut.Invoke();
+        var result = await sut();
 
         // Assert
         result.Should().NotBeNull().And.BeOfType<Ok<List<UserDTO>>>().Which.Should().BeEquivalentTo(
@@ -80,10 +82,10 @@ internal sealed class UserEndpointsV1Tests
         var userService = Substitute.For<IUserService>();
         userService.ListUsersAsync(default).Returns(users);
 
-        var sut = () => UserEndpointsV1.GetUsersAsync(userService, default);
+        Task<IResult> sut() => UserEndpointsV1.GetUsersAsync(userService, default);
 
         // Act
-        var result = await sut.Invoke();
+        var result = await sut();
 
         // Assert
         result.Should().NotBeNull().And.BeOfType<Ok<List<UserDTO>>>().Which.Should().BeEquivalentTo(
@@ -102,10 +104,10 @@ internal sealed class UserEndpointsV1Tests
         userService.DeleteUserAsync(default, default).Returns(
             Task.FromResult<OneOf<Success, OneOf.Types.NotFound, UserDeletionFailedError>>(new UserDeletionFailedError()));
 
-        var sut = () => UserEndpointsV1.DeleteUserAsync(userService, default, default);
+        Task<IResult> sut() => UserEndpointsV1.DeleteUserAsync(userService, default, default);
 
         // Act
-        var result = await sut.Invoke();
+        var result = await sut();
 
         // Assert
         result.Should().NotBeNull().And.BeOfType<BadRequest<string>>().Which.Should().BeEquivalentTo(
@@ -124,10 +126,10 @@ internal sealed class UserEndpointsV1Tests
         userService.DeleteUserAsync(default, default).Returns(
             Task.FromResult<OneOf<Success, OneOf.Types.NotFound, UserDeletionFailedError>>(new OneOf.Types.NotFound()));
 
-        var sut = () => UserEndpointsV1.DeleteUserAsync(userService, default, default);
+        Task<IResult> sut() => UserEndpointsV1.DeleteUserAsync(userService, default, default);
 
         // Act
-        var result = await sut.Invoke();
+        var result = await sut();
 
         // Assert
         result.Should().NotBeNull().And.BeOfType<Microsoft.AspNetCore.Http.HttpResults.NotFound>().Which.StatusCode.Should().Be(404);
@@ -141,10 +143,10 @@ internal sealed class UserEndpointsV1Tests
         userService.DeleteUserAsync(default, default).Returns(
             Task.FromResult<OneOf<Success, OneOf.Types.NotFound, UserDeletionFailedError>>(new Success()));
 
-        var sut = () => UserEndpointsV1.DeleteUserAsync(userService, default, default);
+        Task<IResult> sut() => UserEndpointsV1.DeleteUserAsync(userService, default, default);
 
         // Act
-        var result = await sut.Invoke();
+        var result = await sut();
 
         // Assert
         result.Should().NotBeNull().And.BeOfType<Ok>().Which.StatusCode.Should().Be(200);
@@ -158,10 +160,10 @@ internal sealed class UserEndpointsV1Tests
         var userService = Substitute.For<IUserService>();
         userService.UpdateUserAsync(default!, default).ReturnsForAnyArgs(Task.FromResult<OneOf<Success, OneOf.Types.NotFound, EmailReservedError, UserUpdateFailedError>>(new UserUpdateFailedError()));
 
-        var sut = () => UserEndpointsV1.UpdateUserAsync(userService, default, updateUserRequest, default);
+        Task<IResult> sut() => UserEndpointsV1.UpdateUserAsync(userService, default, updateUserRequest, default);
 
         // Act
-        var result = await sut.Invoke();
+        var result = await sut();
 
         // Assert
         result.Should().NotBeNull().And.BeOfType<BadRequest<string>>().Which.Should().BeEquivalentTo(
@@ -180,10 +182,10 @@ internal sealed class UserEndpointsV1Tests
         var userService = Substitute.For<IUserService>();
         userService.UpdateUserAsync(default!, default).ReturnsForAnyArgs(Task.FromResult<OneOf<Success, OneOf.Types.NotFound, EmailReservedError, UserUpdateFailedError>>(new EmailReservedError()));
 
-        var sut = () => UserEndpointsV1.UpdateUserAsync(userService, default, updateUserRequest, default);
+        Task<IResult> sut() => UserEndpointsV1.UpdateUserAsync(userService, default, updateUserRequest, default);
 
         // Act
-        var result = await sut.Invoke();
+        var result = await sut();
 
         // Assert
         result.Should().NotBeNull().And.BeOfType<BadRequest<string>>().Which.Should().BeEquivalentTo(
@@ -202,10 +204,10 @@ internal sealed class UserEndpointsV1Tests
         var userService = Substitute.For<IUserService>();
         userService.UpdateUserAsync(default!, default).ReturnsForAnyArgs(Task.FromResult<OneOf<Success, OneOf.Types.NotFound, EmailReservedError, UserUpdateFailedError>>(new OneOf.Types.NotFound()));
 
-        var sut = () => UserEndpointsV1.UpdateUserAsync(userService, default, updateUserRequest, default);
+        Task<IResult> sut() => UserEndpointsV1.UpdateUserAsync(userService, default, updateUserRequest, default);
 
         // Act
-        var result = await sut.Invoke();
+        var result = await sut();
 
         // Assert
         result.Should().NotBeNull().And.BeOfType<Microsoft.AspNetCore.Http.HttpResults.NotFound>().Which.StatusCode.Should().Be(404);
@@ -219,10 +221,10 @@ internal sealed class UserEndpointsV1Tests
         var userService = Substitute.For<IUserService>();
         userService.UpdateUserAsync(default!, default).ReturnsForAnyArgs(Task.FromResult<OneOf<Success, OneOf.Types.NotFound, EmailReservedError, UserUpdateFailedError>>(new UserUpdateFailedError()));
 
-        var sut = () => UserEndpointsV1.UpdateUserAsync(userService, default, updateUserRequest, default);
+        Task<IResult> sut() => UserEndpointsV1.UpdateUserAsync(userService, default, updateUserRequest, default);
 
         // Act
-        var result = await sut.Invoke();
+        var result = await sut();
 
         // Assert
         result.Should().NotBeNull().And.BeOfType<BadRequest<string>>().Which.Should().BeEquivalentTo(
@@ -244,10 +246,10 @@ internal sealed class UserEndpointsV1Tests
         var userService = Substitute.For<IUserService>();
         userService.UpdateUserAsync(default!, default).ReturnsForAnyArgs(Task.FromResult<OneOf<Success, OneOf.Types.NotFound, EmailReservedError, UserUpdateFailedError>>(new Success()));
 
-        var sut = () => UserEndpointsV1.UpdateUserAsync(userService, default, updateUserRequest, default);
+        Task<IResult> sut() => UserEndpointsV1.UpdateUserAsync(userService, default, updateUserRequest, default);
 
         // Act
-        var result = await sut.Invoke();
+        var result = await sut();
 
         // Assert
         result.Should().NotBeNull().And.BeOfType<Ok>().Which.StatusCode.Should().Be(200);
@@ -261,10 +263,10 @@ internal sealed class UserEndpointsV1Tests
         var userService = Substitute.For<IUserService>();
         userService.CreateUserAsync(default!, default).ReturnsForAnyArgs(new UserCreationFailedError());
 
-        var sut = () => UserEndpointsV1.CreateUserAsync(userService, createUserRequest, default);
+        Task<IResult> sut() => UserEndpointsV1.CreateUserAsync(userService, createUserRequest, default);
 
         // Act
-        var result = await sut.Invoke();
+        var result = await sut();
 
         // Assert
         result.Should().NotBeNull().And.BeOfType<BadRequest<string>>().Which.Should().BeEquivalentTo(
@@ -283,10 +285,10 @@ internal sealed class UserEndpointsV1Tests
         var userService = Substitute.For<IUserService>();
         userService.CreateUserAsync(default!, default).ReturnsForAnyArgs(new EmailReservedError());
 
-        var sut = () => UserEndpointsV1.CreateUserAsync(userService, createUserRequest, default);
+        Task<IResult> sut() => UserEndpointsV1.CreateUserAsync(userService, createUserRequest, default);
 
         // Act
-        var result = await sut.Invoke();
+        var result = await sut();
 
         // Assert
         result.Should().NotBeNull().And.BeOfType<BadRequest<string>>().Which.Should().BeEquivalentTo(
@@ -306,10 +308,10 @@ internal sealed class UserEndpointsV1Tests
         var userService = Substitute.For<IUserService>();
         userService.CreateUserAsync(default!, default).ReturnsForAnyArgs(new Success<int>(id));
 
-        var sut = () => UserEndpointsV1.CreateUserAsync(userService, createUserRequest, default);
+        Task<IResult> sut() => UserEndpointsV1.CreateUserAsync(userService, createUserRequest, default);
 
         // Act
-        var result = await sut.Invoke();
+        var result = await sut();
 
         // Assert
         result.Should().NotBeNull().And.BeOfType<CreatedAtRoute>().Which.Should().BeEquivalentTo(
@@ -328,10 +330,10 @@ internal sealed class UserEndpointsV1Tests
         var createUserRequest = new CreateUserRequest(null!, null!);
         var userService = Substitute.For<IUserService>();
 
-        var sut = () => UserEndpointsV1.CreateUserAsync(userService, createUserRequest, default);
+        Task<IResult> sut() => UserEndpointsV1.CreateUserAsync(userService, createUserRequest, default);
 
         // Act
-        var result = await sut.Invoke();
+        var result = await sut();
 
         // Assert
         result.Should().NotBeNull().And.BeOfType<ValidationProblem>().Which.Should().BeEquivalentTo(
@@ -341,8 +343,8 @@ internal sealed class UserEndpointsV1Tests
                 ProblemDetails = new HttpValidationProblemDetails(
                     new Dictionary<string, string[]>
                     {
-                        { nameof(createUserRequest.Email), new string[] { "Invalid email. Email must have a recipient and domain and contain @ sign.", } },
-                        { nameof(createUserRequest.Password), new string[] { "Invalid password. Password length must be at least 8 characters.", } },
+                        { nameof(createUserRequest.Email), EmailValidationErrorMessage },
+                        { nameof(createUserRequest.Password), PasswordValidationErrorMessage },
                     })
                 {
                     Status = 400,
@@ -358,10 +360,10 @@ internal sealed class UserEndpointsV1Tests
         var createUserRequest = new CreateUserRequest("bill@microsoft.com", null!);
         var userService = Substitute.For<IUserService>();
 
-        var sut = () => UserEndpointsV1.CreateUserAsync(userService, createUserRequest, default);
+        Task<IResult> sut() => UserEndpointsV1.CreateUserAsync(userService, createUserRequest, default);
 
         // Act
-        var result = await sut.Invoke();
+        var result = await sut();
 
         // Assert
         result.Should().NotBeNull().And.BeOfType<ValidationProblem>().Which.Should().BeEquivalentTo(
@@ -371,7 +373,7 @@ internal sealed class UserEndpointsV1Tests
                 ProblemDetails = new HttpValidationProblemDetails(
                     new Dictionary<string, string[]>
                     {
-                        { nameof(createUserRequest.Password), new string[] { "Invalid password. Password length must be at least 8 characters.", } },
+                        { nameof(createUserRequest.Password), PasswordValidationErrorMessage },
                     })
                 {
                     Status = 400,
@@ -387,10 +389,10 @@ internal sealed class UserEndpointsV1Tests
         var createUserRequest = new CreateUserRequest(null!, "password123");
         var userService = Substitute.For<IUserService>();
 
-        var sut = () => UserEndpointsV1.CreateUserAsync(userService, createUserRequest, default);
+        Task<IResult> sut() => UserEndpointsV1.CreateUserAsync(userService, createUserRequest, default);
 
         // Act
-        var result = await sut.Invoke();
+        var result = await sut();
 
         // Assert
         result.Should().NotBeNull().And.BeOfType<ValidationProblem>().Which.Should().BeEquivalentTo(
@@ -400,7 +402,7 @@ internal sealed class UserEndpointsV1Tests
                 ProblemDetails = new HttpValidationProblemDetails(
                     new Dictionary<string, string[]>
                     {
-                        { nameof(createUserRequest.Email), new string[] { "Invalid email. Email must have a recipient and domain and contain @ sign.", } },
+                        { nameof(createUserRequest.Email), EmailValidationErrorMessage },
                     })
                 {
                     Status = 400,

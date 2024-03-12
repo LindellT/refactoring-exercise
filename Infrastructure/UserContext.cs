@@ -3,12 +3,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure;
 
-internal sealed class UserContext : DbContext
+internal sealed class UserContext(DbContextOptions options) : DbContext(options)
 {
-    public UserContext(DbContextOptions options) : base(options)
-    {
-    }
-    
     public DbSet<UserEntity> Users { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

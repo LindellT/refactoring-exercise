@@ -18,8 +18,12 @@ public sealed record HashedPassword
 
     public static HashedPassword CreateFrom(ValidPassword password, ValidPasswordSalt salt)
     {
+        ArgumentNullException.ThrowIfNull(password);
+
+        ArgumentNullException.ThrowIfNull(salt);
+
         using var sha = SHA256.Create();
-        
+
         // Convert the string to a byte array first, to be processed
         byte[] textBytes = Encoding.UTF8.GetBytes(password.Password + salt.Salt);
         byte[] hashBytes = SHA256.HashData(textBytes);
@@ -27,7 +31,7 @@ public sealed record HashedPassword
         // Convert back to a string, removing the '-' that BitConverter adds
         string hash = BitConverter
             .ToString(hashBytes)
-            .Replace("-", string.Empty);
+            .Replace("-", string.Empty, StringComparison.Ordinal);
 
         return new HashedPassword(hash);
     }

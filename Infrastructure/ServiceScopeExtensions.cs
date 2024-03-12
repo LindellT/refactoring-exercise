@@ -6,7 +6,9 @@ namespace Infrastructure;
 public static class ServiceScopeExtensions
 {
     public static async Task MigrateDatabaseAsync(this IServiceScope scope)
-    {        
+    {
+        ArgumentNullException.ThrowIfNull(scope);
+
         var context = scope.ServiceProvider.GetRequiredService<UserContext>();
         await context.Database.MigrateAsync();
     }

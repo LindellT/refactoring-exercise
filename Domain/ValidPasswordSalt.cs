@@ -13,7 +13,7 @@ public sealed record ValidPasswordSalt
 
     public static OneOf<ValidPasswordSalt, PasswordSaltValidationError> CreateFrom(string salt)
     {
-        if (salt.Length < 32)
+        if (string.IsNullOrEmpty(salt) ||  salt.Length < 32)
         {
             return new PasswordSaltValidationError();
         }

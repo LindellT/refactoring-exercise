@@ -6,14 +6,9 @@ using OneOf.Types;
 
 namespace Infrastructure;
 
-internal sealed class UserRepository : IUserRepository
+internal sealed class UserRepository(UserContext userContext) : IUserRepository
 {
-    private readonly UserContext _userContext;
-
-    public UserRepository(UserContext userContext)
-    {
-        _userContext = userContext;
-    }
+    private readonly UserContext _userContext = userContext;
 
     public async Task<OneOf<Success<int>, UserCreationFailedError>> CreateUserAsync(ValidEmailAddress email, HashedPassword passwordHash, CancellationToken cancellationToken)
     {

@@ -1,5 +1,6 @@
 ﻿using ApplicationServices;
 using Domain;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api;
@@ -78,7 +79,7 @@ internal static class UserEndpointsV1
                 validPassword => password = validPassword,
                 passwordValidationError => validationProblems.Add((nameof(request.Password), passwordValidationError.Message)));
 
-        return validationProblems.Any()
+        return validationProblems.Count != 0
             ? CreateValidationProblemResult(validationProblems) 
             : (await userService.CreateUserAsync(new(email!, password!), cancellationToken))
                 .Match<IResult>(
@@ -95,7 +96,7 @@ internal static class UserEndpointsV1
                 emailReservedError => TypedResults.BadRequest(emailReservedError.Message),
                 userUpdateFailedError => TypedResults.BadRequest(userUpdateFailedError.Message));
 
-    private static IResult CreateValidationProblemResult(List<(string field, string description)> validationProblems)
+    private static ValidationProblem CreateValidationProblemResult(List<(string field, string description)> validationProblems)
         => TypedResults.ValidationProblem(
             validationProblems.ToDictionary(
                 p => p.field,
