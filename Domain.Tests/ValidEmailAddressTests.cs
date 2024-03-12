@@ -1,4 +1,4 @@
-﻿namespace Tests.Domain;
+﻿namespace Domain.Tests;
 
 public sealed class ValidEmailAddressTests
 {

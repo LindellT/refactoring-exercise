@@ -1,6 +1,4 @@
-﻿using ApplicationServices;
-
-namespace Tests.ApplicationServices;
+﻿namespace ApplicationServices.Tests;
 
 public sealed class UpdateUserCommandTests
 {
