@@ -1,6 +1,5 @@
 ﻿using Api;
 using ApplicationServices;
-using Domain;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Routing;
@@ -11,6 +10,8 @@ namespace Tests.Api;
 
 internal sealed class UserEndpointsV1Tests
 {
+    private const string ValidationProblemType = "https://tools.ietf.org/html/rfc9110#section-15.5.1";
+
     [Test]
     public async Task GivenGetUserIsCalled_WhenUserDoesNotExists_ThenReturnsCorrectly()
     {
@@ -345,7 +346,7 @@ internal sealed class UserEndpointsV1Tests
                     })
                 {
                     Status = 400,
-                    Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1",
+                    Type = ValidationProblemType,
                 },
             });
     }
@@ -374,7 +375,7 @@ internal sealed class UserEndpointsV1Tests
                     })
                 {
                     Status = 400,
-                    Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1",
+                    Type = ValidationProblemType,
                 },
             });
     }
@@ -403,7 +404,7 @@ internal sealed class UserEndpointsV1Tests
                     })
                 {
                     Status = 400,
-                    Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1",
+                    Type = ValidationProblemType,
                 },
             });
     }
