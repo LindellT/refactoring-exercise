@@ -59,7 +59,7 @@ internal static class UserEndpointsV1
                 .Match<ValidPassword?>(
                     validPassword => validPassword,
                     passwordValidationError => null))
-            .Match<Task<IResult>>(
+			.Match(
                 async updateUserCommand => await ExecuteUpdateUserCommand(userService, updateUserCommand, cancellationToken),
                 updateUserCommandValidationError => Task.FromResult<IResult>(TypedResults.BadRequest(updateUserCommandValidationError!.Message)));
 
