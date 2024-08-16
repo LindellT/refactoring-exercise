@@ -12,13 +12,13 @@ internal sealed class UserService(IUserRepository userRepository) : IUserService
         => await (await _userRepository.FindUserByEmailAsync(command.EmailAddress, cancellationToken))
             .Match<Task<OneOf<Success<int>, EmailReservedError, UserCreationFailedError>>>(
                 async found => await Task.FromResult(new EmailReservedError()),
-                async _ => (await SaveUserAsync(command, cancellationToken))
+                async _ => (await PersistNewUserAsync(command, cancellationToken))
                     .Match<OneOf<Success<int>, EmailReservedError, UserCreationFailedError>>(
                         success => success,
                         error => error)
                 );
 
-    private async Task<OneOf<Success<int>, UserCreationFailedError>> SaveUserAsync(CreateUserCommand command, CancellationToken cancellationToken)
+    private async Task<OneOf<Success<int>, UserCreationFailedError>> PersistNewUserAsync(CreateUserCommand command, CancellationToken cancellationToken)
         => await _userRepository.CreateUserAsync(
             command.EmailAddress,
             HashedPassword.CreateFrom(command.Password, _validPasswordSalt),
@@ -34,7 +34,9 @@ internal sealed class UserService(IUserRepository userRepository) : IUserService
                 notFound => notFound);
 
     public async Task<List<UserDTO>> ListUsersAsync(CancellationToken cancellationToken)
-        => (await _userRepository.ListUsersAsync(cancellationToken)).Select(u => UserDTO.FromUser(u)!).ToList();
+        => (await _userRepository.ListUsersAsync(cancellationToken))
+            .Select(u => UserDTO.FromUser(u)!)
+            .ToList();
 
     public async Task<OneOf<Success, NotFound, EmailReservedError, UserUpdateFailedError>> UpdateUserAsync(UpdateUserCommand command, CancellationToken cancellationToken)
         => await (await _userRepository.FindUserAsync(command.Id, cancellationToken))
