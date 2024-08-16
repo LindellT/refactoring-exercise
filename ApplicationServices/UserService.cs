@@ -1,26 +1,32 @@
-﻿namespace ApplicationServices;
+﻿using System.Threading;
+
+namespace ApplicationServices;
 
 internal sealed class UserService(IUserRepository userRepository) : IUserService
 {
     private readonly IUserRepository _userRepository = userRepository;
     private readonly ValidPasswordSalt _validPasswordSalt = ValidPasswordSalt.CreateFrom("12345678901234567890123465789012")
-        .Match(validPasswordSalt => validPasswordSalt, passwordSaltValidationError => throw passwordSaltValidationError);
+        .Match(
+            validPasswordSalt => validPasswordSalt,
+            passwordSaltValidationError => throw passwordSaltValidationError);
 
     public async Task<OneOf<Success<int>, EmailReservedError, UserCreationFailedError>> CreateUserAsync(CreateUserCommand command, CancellationToken cancellationToken)
     {
-        User? userByEmail = null;
-        (await _userRepository.FindUserByEmailAsync(command.EmailAddress, cancellationToken)).Switch(res => userByEmail = res, _ => userByEmail = null);
-        
-        if (userByEmail is not null)
-        {
-            return new EmailReservedError();
-        }
-
-        var hashedPassword = HashedPassword.CreateFrom(command.Password, _validPasswordSalt);
-
-        return (await _userRepository.CreateUserAsync(command.EmailAddress, hashedPassword, cancellationToken))
-            .Match<OneOf<Success<int>, EmailReservedError, UserCreationFailedError>>(success => success, error => error);
+        return await (await _userRepository.FindUserByEmailAsync(command.EmailAddress, cancellationToken))
+            .Match<Task<OneOf<Success<int>, EmailReservedError, UserCreationFailedError>>>(
+                async res => await Task.FromResult(new EmailReservedError()),
+                async _ => (await SaveUserAsync(command, cancellationToken))
+                    .Match<OneOf<Success<int>, EmailReservedError, UserCreationFailedError>>(
+                        success => success,
+                        error => error)
+                );
     }
+
+    private async Task<OneOf<Success<int>, UserCreationFailedError>> SaveUserAsync(CreateUserCommand command, CancellationToken cancellationToken)
+        => await _userRepository.CreateUserAsync(
+            command.EmailAddress,
+            HashedPassword.CreateFrom(command.Password, _validPasswordSalt),
+            cancellationToken);
 
     public async Task<OneOf<Success, NotFound, UserDeletionFailedError>> DeleteUserAsync(int id, CancellationToken cancellationToken)
         => await _userRepository.DeleteUserAsync(id, cancellationToken);
