@@ -71,7 +71,7 @@ public class UserRepositoryTests
         var userId = (await sut.CreateUserAsync(email, passwordHash, CancellationToken.None)).Match<Success<int>?>(success => success, userCreationFailedError => null)!.Value.Value;
 
         // Act
-        var result = (await sut.DeleteUserAsync(userId, CancellationToken.None)).Match<Success?>(success => success, notFound => null, userCreationFailedError => null);
+        var result = (await sut.DeleteUserAsync(userId, CancellationToken.None)).Match<Success?>(success => success, notFound => null, userDeletionFailedError => null);
 
         // Assert
         result.Should().NotBeNull().And.BeOfType<Success>();
@@ -95,22 +95,39 @@ public class UserRepositoryTests
 		var sut = new UserRepository(context);
 
 		// Act
-		var result = (await sut.DeleteUserAsync(1, CancellationToken.None)).Match<NotFound?>(success => null, notFound => notFound, userCreationFailedError => null);
+		var result = (await sut.DeleteUserAsync(1, CancellationToken.None)).Match<NotFound?>(success => null, notFound => notFound, userDeletionFailedError => null);
 
 		// Assert
 		result.Should().NotBeNull().And.BeOfType<NotFound>();
 	}
 
     [Fact]
-    public void GivenDeleteUserAsyncIsCalled_WhenDeleteFails_ThenReturnsCorrectly()
+    public async Task GivenDeleteUserAsyncIsCalled_WhenDeleteFails_ThenReturnsCorrectly()
     {
-        // Arrange
+		// Arrange
+		var email = ValidEmailAddress.CreateFrom("bill@microsoft.com").Match<ValidEmailAddress?>(validEmailAddress => validEmailAddress, emailValidationError => null)!;
+		var password = ValidPassword.CreateFrom("password123").Match<ValidPassword?>(validPassword => validPassword, passwordValidationError => null)!;
+		var passwordSalt = ValidPasswordSalt.CreateFrom("12345678901235467890123456789012").Match<ValidPasswordSalt?>(validPasswordSalt => validPasswordSalt, passwordSaltValidationError => null)!;
+		var passwordHash = HashedPassword.CreateFrom(password, passwordSalt)!;
+		using SqliteConnection connection = new("Filename=:memory:");
+		await connection.OpenAsync();
+		var contextOptions = new DbContextOptionsBuilder<UserContext>()
+			.UseSqlite(connection)
+			.Options;
+        using var context = new UserContext(contextOptions);
+		await context.Database.MigrateAsync();
+		var repo = new UserRepository(context);
+		var userId = (await repo.CreateUserAsync(email, passwordHash, CancellationToken.None)).Match<Success<int>?>(success => success, userCreationFailedError => null)!.Value.Value;
+        var mockContext = Substitute.ForPartsOf<UserContext>(contextOptions);
+        mockContext.SaveChangesAsync(Arg.Any<CancellationToken>()).Returns(0);
+        var sut = new UserRepository(mockContext);
 
-        // Act
+		// Act
+		var result = (await sut.DeleteUserAsync(userId, CancellationToken.None)).Match<UserDeletionFailedError?>(success => null, notFound => null, userDeletionFailedError => userDeletionFailedError);
 
-        // Assert
-        throw new NotImplementedException();
-    }
+		// Assert
+		result.Should().NotBeNull().And.BeOfType<UserDeletionFailedError>();
+	}
 
     [Fact]
     public void GivenFindUserAsyncIsCalled_WhenFound_ThenReturnsCorrectly()
