@@ -206,7 +206,7 @@ public sealed class UserServiceTests
         var password = ValidPassword.CreateFrom("password123").Match<ValidPassword?>(validPassword => validPassword, passwordValidationError => null)!;
         var passwordSalt = ValidPasswordSalt.CreateFrom("12345678901235467890123456789012").Match<ValidPasswordSalt?>(validPasswordSalt => validPasswordSalt, passwordSaltValidationError => null)!;
         var userFoundWithId = new User(1, email, HashedPassword.CreateFrom(password, passwordSalt));
-        var userFoundWithEmail = new User(1, email, HashedPassword.CreateFrom(password, passwordSalt));
+        var userFoundWithEmail = new NotFound();
         userRepository.FindUserAsync(default, default).ReturnsForAnyArgs(Task.FromResult<OneOf<User, NotFound>>(userFoundWithId));
         userRepository.FindUserByEmailAsync(default!, default).ReturnsForAnyArgs(Task.FromResult<OneOf<User, NotFound>>(userFoundWithEmail));
         userRepository.UpdateUserAsync(default!, default).ReturnsForAnyArgs(Task.FromResult<OneOf<Success, NotFound, UserUpdateFailedError>>(new UserUpdateFailedError()));
@@ -231,7 +231,7 @@ public sealed class UserServiceTests
         var password = ValidPassword.CreateFrom("password123").Match<ValidPassword?>(validPassword => validPassword, passwordValidationError => null)!;
         var passwordSalt = ValidPasswordSalt.CreateFrom("12345678901235467890123456789012").Match<ValidPasswordSalt?>(validPasswordSalt => validPasswordSalt, passwordSaltValidationError => null)!;
         var userFoundWithId = new User(1, email, HashedPassword.CreateFrom(password, passwordSalt));
-        var userFoundWithEmail = new User(1, email, HashedPassword.CreateFrom(password, passwordSalt));
+        var userFoundWithEmail = new NotFound();
         userRepository.FindUserAsync(default, default).ReturnsForAnyArgs(Task.FromResult<OneOf<User, NotFound>>(userFoundWithId));
         userRepository.FindUserByEmailAsync(default!, default).ReturnsForAnyArgs(Task.FromResult<OneOf<User, NotFound>>(userFoundWithEmail));
         userRepository.UpdateUserAsync(default!, default).ReturnsForAnyArgs(Task.FromResult<OneOf<Success, NotFound, UserUpdateFailedError>>(new Success()));

@@ -54,27 +54,21 @@ internal sealed class UserService(IUserRepository userRepository) : IUserService
                 async _ => await Task.FromResult(new NotFound()));
 
     private async Task<OneOf<User, EmailReservedError>> CreateUpdatedUserToPersist(UpdateUserCommand command, User user, CancellationToken cancellationToken)
-    {
-        if (command.EmailAddress is not null)
-        {
-            User? userByEmail = null;
-            (await _userRepository.FindUserByEmailAsync(command.EmailAddress, cancellationToken))
-                .Switch(
-                    res => userByEmail = res,
-                    _ => userByEmail = null);
+        => (await UpdateEmailAddress(user, command.EmailAddress, cancellationToken))
+            .Match<OneOf<User, EmailReservedError>>(
+                updatedUser => UpdatePassword(updatedUser, command.Password),
+                emailReservedError => emailReservedError);
 
-            if (userByEmail is not null && userByEmail.Id != command.Id)
-            {
-                return new EmailReservedError();
-            }
-            user = user with { Email = command.EmailAddress, };
-        }
+    private async Task<OneOf<User, EmailReservedError>> UpdateEmailAddress(User user, ValidEmailAddress? validEmailAddress, CancellationToken cancellationToken)
+        => validEmailAddress is null
+            ? user
+            : (await _userRepository.FindUserByEmailAsync(validEmailAddress, cancellationToken))
+                .Match<OneOf<User, EmailReservedError>>(
+                    res => new EmailReservedError(),
+                    _ => user with { Email = validEmailAddress, });
 
-        if (command.Password is not null)
-        {
-            user = user with { HashedPassword = HashedPassword.CreateFrom(command.Password, _validPasswordSalt), };
-        }
-
-        return user;
-    }
+    private User UpdatePassword(User user, ValidPassword? validPassword)
+        => validPassword is null
+            ? user
+            : user with { HashedPassword = HashedPassword.CreateFrom(validPassword, _validPasswordSalt), };
 }
