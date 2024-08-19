@@ -78,15 +78,28 @@ public class UserRepositoryTests
     }
 
     [Fact]
-    public void GivenDeleteUserAsyncIsCalled_WhenUserNotFound_ThenReturnsCorrectly()
+    public async Task GivenDeleteUserAsyncIsCalled_WhenUserNotFound_ThenReturnsCorrectly()
     {
-        // Arrange
+		// Arrange
+		var email = ValidEmailAddress.CreateFrom("bill@microsoft.com").Match<ValidEmailAddress?>(validEmailAddress => validEmailAddress, emailValidationError => null)!;
+		var password = ValidPassword.CreateFrom("password123").Match<ValidPassword?>(validPassword => validPassword, passwordValidationError => null)!;
+		var passwordSalt = ValidPasswordSalt.CreateFrom("12345678901235467890123456789012").Match<ValidPasswordSalt?>(validPasswordSalt => validPasswordSalt, passwordSaltValidationError => null)!;
+		var passwordHash = HashedPassword.CreateFrom(password, passwordSalt)!;
+		using SqliteConnection connection = new("Filename=:memory:");
+		await connection.OpenAsync();
+		var contextOptions = new DbContextOptionsBuilder<UserContext>()
+			.UseSqlite(connection)
+			.Options;
+		using UserContext context = new(contextOptions);
+		await context.Database.MigrateAsync();
+		var sut = new UserRepository(context);
 
-        // Act
+		// Act
+		var result = (await sut.DeleteUserAsync(1, CancellationToken.None)).Match<NotFound?>(success => null, notFound => notFound, userCreationFailedError => null);
 
-        // Assert
-        throw new NotImplementedException();
-    }
+		// Assert
+		result.Should().NotBeNull().And.BeOfType<NotFound>();
+	}
 
     [Fact]
     public void GivenDeleteUserAsyncIsCalled_WhenDeleteFails_ThenReturnsCorrectly()
