@@ -1,4 +1,6 @@
-﻿namespace ApplicationServices;
+﻿using Domain;
+
+namespace ApplicationServices;
 
 internal sealed class UserService(IUserRepository userRepository) : IUserService
 {
@@ -41,31 +43,38 @@ internal sealed class UserService(IUserRepository userRepository) : IUserService
     public async Task<OneOf<Success, NotFound, EmailReservedError, UserUpdateFailedError>> UpdateUserAsync(UpdateUserCommand command, CancellationToken cancellationToken)
         => await (await _userRepository.FindUserAsync(command.Id, cancellationToken))
             .Match<Task<OneOf<Success, NotFound, EmailReservedError, UserUpdateFailedError>>>(
-                async user =>
-                {
-                    if (command.EmailAddress is not null)
-                    {
-                        User? userByEmail = null;
-                        (await _userRepository.FindUserByEmailAsync(command.EmailAddress, cancellationToken)).Switch(res => userByEmail = res, _ => userByEmail = null);
-
-                        if (userByEmail is not null && userByEmail.Id != command.Id)
-                        {
-                            return new EmailReservedError();
-                        }
-
-                        user = user with { Email = command.EmailAddress, };
-                    }
-
-                    if (command.Password is not null)
-                    {
-                        user = user with { HashedPassword = HashedPassword.CreateFrom(command.Password, _validPasswordSalt), };
-                    }
-
-                    return (await _userRepository.UpdateUserAsync(user, cancellationToken))
-                        .Match<OneOf<Success, NotFound, EmailReservedError, UserUpdateFailedError>>(
-                            success => success,
-                            notFound => notFound,
-                            userUpdateFailedError => userUpdateFailedError);
-                },
+                async user => await (await CreateUpdatedUserToPersist(command, user, cancellationToken))
+                    .Match<Task<OneOf<Success, NotFound, EmailReservedError, UserUpdateFailedError>>>(
+                        async updatedUser => (await _userRepository.UpdateUserAsync(updatedUser, cancellationToken))
+                            .Match<OneOf<Success, NotFound, EmailReservedError, UserUpdateFailedError>>(
+                                success => success,
+                                notFound => notFound,
+                                userUpdateFailedError => userUpdateFailedError),
+                        async emailReservedError => await Task.FromResult(emailReservedError)),
                 async _ => await Task.FromResult(new NotFound()));
+
+    private async Task<OneOf<User, EmailReservedError>> CreateUpdatedUserToPersist(UpdateUserCommand command, User user, CancellationToken cancellationToken)
+    {
+        if (command.EmailAddress is not null)
+        {
+            User? userByEmail = null;
+            (await _userRepository.FindUserByEmailAsync(command.EmailAddress, cancellationToken))
+                .Switch(
+                    res => userByEmail = res,
+                    _ => userByEmail = null);
+
+            if (userByEmail is not null && userByEmail.Id != command.Id)
+            {
+                return new EmailReservedError();
+            }
+            user = user with { Email = command.EmailAddress, };
+        }
+
+        if (command.Password is not null)
+        {
+            user = user with { HashedPassword = HashedPassword.CreateFrom(command.Password, _validPasswordSalt), };
+        }
+
+        return user;
+    }
 }
