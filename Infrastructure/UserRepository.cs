@@ -72,6 +72,6 @@ internal sealed class UserRepository(UserContext userContext) : IUserRepository
         userEntity.Email = user.Email;
         userEntity.HashedPassword = user.HashedPassword;
 
-        return await _userContext.SaveChangesAsync(cancellationToken) == 1 ? new Success() : new UserUpdateFailedError();        
+        return await _userContext.SaveChangesAsync(cancellationToken) == 1 ? new Success() : new UserUpdateFailedError();
     }
 }
